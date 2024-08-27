@@ -29,10 +29,8 @@ $RECYCLE.BIN/
 
 # Linux
 *~
-
 # KDE directory preferences
 .directory
-
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
 
@@ -46,33 +44,53 @@ $RECYCLE.BIN/
 Vagrantfile
 
 #-------------------------
-# Temporary Files
+# AvegaCMS API
 #-------------------------
-writable/cache/*
-!writable/cache/index.html
+app/
+public/
+writable/
 
-writable/logs/*
-!writable/logs/index.html
+spark
 
-writable/session/*
-!writable/session/index.html
+src/Config/App.php
+src/Config/Autoload.php
+src/Config/Cache.php
+src/Config/Constants.php
+src/Config/ContentSecurityPolicy.php
+src/Config/Cookie.php
+src/Config/CURLRequest.php
+src/Config/Database.php
+src/Config/DocTypes.php
+src/Config/Email.php
+src/Config/Encryption.php
+src/Config/Exceptions.php
+src/Config/Feature.php
+src/Config/Filters.php
+src/Config/ForeignCharacters.php
+src/Config/Format.php
+src/Config/Generators.php
+src/Config/Honeypot.php
+src/Config/Images.php
+src/Config/Kint.php
+src/Config/Logger.php
+src/Config/Migrations.php
+src/Config/Mimes.php
+src/Config/Modules.php
+src/Config/Pager.php
+src/Config/Paths.php
+src/Config/Publisher.php
+src/Config/Routing.php
+src/Config/Security.php
+src/Config/Session.php
+src/Config/Toolbar.php
+src/Config/UserAgents.php
+src/Config/Validation.php
+src/Config/View.php
 
-writable/uploads/*
-!writable/uploads/index.html
-
-writable/debugbar/*
-!writable/debugbar/.gitkeep
-
-php_errors.log
-
-#-------------------------
-# User Guide Temp Files
-#-------------------------
-user_guide_src/build/*
-user_guide_src/cilexer/build/*
-user_guide_src/cilexer/dist/*
-user_guide_src/cilexer/pycilexer.egg-info/*
-
+src/Views/template
+src/Views/template/*
+modules
+modules/*
 #-------------------------
 # Test Files
 #-------------------------
@@ -97,7 +115,7 @@ _modules/*
 .php-version
 
 # Jetbrains editors (PHPStorm, etc)
-.idea/
+../.idea/
 *.iml
 
 # Netbeans
@@ -124,3 +142,8 @@ nb-configuration.xml
 
 /results/
 /phpunit*.xml
+/.phpunit.*.cache
+
+/writable/
+/htdocs
+/.php-cs-fixer.dist.php
