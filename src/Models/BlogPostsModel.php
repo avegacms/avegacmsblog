@@ -9,35 +9,46 @@ use stdClass;
 
 class BlogPostsModel extends MetaDataModel
 {
-    public function getBlogPosts(int $moduleId, array $filter): array
+    protected TagsLinksModel $TLM;
+    protected TagsModel $TM;
+
+    public function __construct()
     {
-        $TLM = new TagsLinksModel();
+        parent::__construct();
+        $this->TLM = new TagsLinksModel();
+        $this->TM  = new TagsModel();
+    }
+
+    public function getBlogPosts(int $moduleId, array $filter, bool $hide = false): array
+    {
         if (! empty($filter['tags'])) {
-            $tags = explode(',', $filter['tags']);
+            $tags = array_unique(explode(',', (string) $filter['tags']));
 
-            $query = $TLM->select('meta_id')
-                ->whereIn('tag_id', $tags)
-                ->groupBy('meta_id')
-                ->having('COUNT(DISTINCT tag_id) = ' . count($tags))
-                ->findAll();
-
-            $filter['id'] = array_column($query, 'meta_id');
+            $filter['id'] = $this->TLM->getAllowedPosts($tags);
 
             unset($filter['tags']);
         }
 
-        $posts = $this->getMetadataModule($moduleId)->filter($filter)->apiPagination();
+        $posts = ($hide)
+            ? $this->getMetadataModule($moduleId)->where(['parent !=' => 0])->filter($filter)->apiPagination()
+            : $this->getMetadataModule($moduleId)->filter($filter)->apiPagination();
 
-        $tags = $TLM->select(['tag_id', 'meta_id'])->whereIn('meta_id', empty($posts['list']) ? ['id' => 0] : array_column($posts['list'], 'id'))->findAll();
+        if (empty($posts))
+        {
+            return [];
+        }
 
-        foreach ($posts['list'] as $post) {
-            $post->tags = $this->tagsArray(array_filter($tags, static fn ($tag) => $tag->meta_id === $post->id));
+        $tags = $this->TLM->getTagsOfPosts($posts['list'], $hide);
+
+        foreach ($posts['list'] as &$post) {
+            $post       = $this->unwrapParent($post);
+            $post->tags = $this->filterTags($tags, $post->id);
         }
 
         return $posts;
     }
 
-    public function getBlogPost(int $id, int $module): ?stdClass
+    public function getBlogPost(int $id, int $module, $hide = false): ?stdClass
     {
         $post = $this->getMetadata($id, $module);
 
@@ -45,25 +56,53 @@ class BlogPostsModel extends MetaDataModel
             return null;
         }
 
-        $TLM  = new TagsLinksModel();
-        $tags = $TLM->select(['tag_id', 'meta_id'])->where(['meta_id' => $id])->findAll();
+        $post = $this->unwrapParent($post);
 
-        $post->tags = $this->tagsArray($tags);
+        $tags = $this->TLM->getTagsOfPosts([$post], $hide);
+
+        $post->tags = $this->filterTags($tags, $post->id);
 
         return $post;
     }
 
-    public function getCategories(int $module): ?array
+    protected function unwrapParent(stdClass $post): stdClass
     {
-        if (($categories = $this->getMetadataModule($module)->findAll()) === null) {
-            return null;
+        $categories = cache()->remember('blog_categories', DAY, fn () => $this->select(['id', 'title'])->findAll());
+
+        $parent = null;
+
+        foreach ($categories as $category) {
+            if ($category->id === $post->parent) {
+                $parent = $category;
+                break;
+            }
         }
 
-        return array_map(static fn ($category) => ['id' => $category->id, 'title' => $category->title], $categories);
+        if ($parent === null) {
+            return $post;
+        }
+
+        $post->parent = [
+            'value' => $parent->id,
+            'label' => $parent->title,
+        ];
+
+        return $post;
     }
 
-    protected function tagsArray(array $array): array
+    protected function filterTags(array $tags, int $postId): array
     {
-        return array_map(static fn ($tag) => $tag->tag_id, $array);
+        $return = [];
+
+        foreach ($tags as $tag) {
+            if ($tag->meta_id === $postId) {
+                $return[] = [
+                    'label' => $tag->label,
+                    'value' => (int) $tag->value,
+                ];
+            }
+        }
+
+        return $return;
     }
 }

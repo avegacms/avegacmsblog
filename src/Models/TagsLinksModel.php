@@ -37,11 +37,40 @@ class TagsLinksModel extends AvegaCmsModel
         'tag_id'        => 'required|is_natural_no_zero',
         'meta_id'       => 'required|is_natural_no_zero',
         'created_by_id' => 'required|is_natural_no_zero',
-        'updated_by_id' => 'required|is_natural_no_zero',
+        'updated_by_id' => 'required|is_natural',
     ];
 
     public function __construct()
     {
         parent::__construct();
+    }
+
+    public function getTagsOfPosts(array $posts, bool $hide): array
+    {
+        return ($hide)
+            ? $this->select(['tags.name as label', 'tags.id as value', 'tags_links.meta_id'])
+                ->whereIn(
+                    'meta_id',
+                    empty($posts) ? ['id' => 0] : array_column($posts, 'id')
+                )
+                ->join('tags', 'tags_links.tag_id = tags.id AND tags.active = 1')
+                ->findAll()
+
+            : $this->select(['tags.name as label', 'tags.id as value', 'tags_links.meta_id'])
+                ->whereIn(
+                    'meta_id',
+                    empty($posts) ? ['id' => 0] : array_column($posts, 'id')
+                )
+                ->join('tags', 'tags_links.tag_id = tags.id')->findAll();
+    }
+
+    public function getAllowedPosts(array $tags): array
+    {
+        $query = $this->select('meta_id')
+            ->whereIn('tag_id', $tags)
+            ->groupBy('meta_id')
+            ->findAll();
+
+        return array_column($query, 'meta_id');
     }
 }

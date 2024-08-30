@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace AvegaCmsBlog\Controllers\Admin;
 
-use App\Controllers\BaseController;
+use AvegaCms\Controllers\Api\AvegaCmsAPI;
 use AvegaCms\Traits\AvegaCmsApiResponseTrait;
 use AvegaCmsBlog\Models\TagsModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use Exception;
 use RuntimeException;
 
-class Tags extends BaseController
+class Tags extends AvegaCmsAPI
 {
     use AvegaCmsApiResponseTrait;
 
@@ -19,6 +19,7 @@ class Tags extends BaseController
 
     public function __construct()
     {
+        parent::__construct();
         $this->TM = new TagsModel();
     }
 
@@ -37,7 +38,7 @@ class Tags extends BaseController
     public function create(): ResponseInterface
     {
         try {
-            $data = (array) $this->request->getJSON();
+            $data = $this->getApiData();
 
             if (empty($data)) {
                 throw new RuntimeException('Запрос пустой');
@@ -60,7 +61,7 @@ class Tags extends BaseController
                 'name'          => trim($data['name']),
                 'slug'          => mb_url_title(mb_strtolower($data['name'])),
                 'active'        => true,
-                'created_by_id' => 1,
+                'created_by_id' => $this->userData->userId,
             ])) === false) {
                 return $this->cmsRespondFail($this->TM->errors());
             }
@@ -78,7 +79,7 @@ class Tags extends BaseController
                 return $this->failNotFound();
             }
 
-            $data = request()->getJSON(true);
+            $data = $this->getApiData();
 
             if (empty($data)) {
                 throw new RuntimeException('Запрос пустой');

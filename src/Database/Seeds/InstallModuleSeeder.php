@@ -1,7 +1,11 @@
 <?php
 
+namespace AvegaCmsBlog\Database\Seeds;
+
 use AvegaCms\Utilities\CmsModule;
 use CodeIgniter\Database\Seeder;
+use Exception;
+use ReflectionException;
 
 class InstallModuleSeeder extends Seeder
 {
