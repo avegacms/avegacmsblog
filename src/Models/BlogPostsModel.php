@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace AvegaCmsBlog\Models;
 
+use AvegaCms\Models\Admin\ContentModel;
 use AvegaCms\Models\Admin\MetaDataModel;
 use stdClass;
 
@@ -11,12 +12,15 @@ class BlogPostsModel extends MetaDataModel
 {
     protected TagsLinksModel $TLM;
     protected TagsModel $TM;
+    protected ContentModel $CM;
 
     public function __construct()
     {
         parent::__construct();
+
         $this->TLM = new TagsLinksModel();
         $this->TM  = new TagsModel();
+        $this->CM  = new ContentModel();
     }
 
     public function getBlogPosts(int $moduleId, array $filter, bool $hide = false): array
@@ -39,10 +43,12 @@ class BlogPostsModel extends MetaDataModel
         }
 
         $tags = $this->TLM->getTagsOfPosts($posts['list'], $hide);
+        $anonses = $this->CM->select(['id','anons'])->whereIn('id', array_column($posts['list'], 'id'))->findAll();
 
         foreach ($posts['list'] as &$post) {
             $post       = $this->unwrapParent($post);
             $post->tags = $this->filterTags($tags, $post->id);
+            $post->anons = $this->getAnons($anonses, $post->id);
         }
 
         return $posts;
@@ -63,6 +69,16 @@ class BlogPostsModel extends MetaDataModel
         $post->tags = $this->filterTags($tags, $post->id);
 
         return $post;
+    }
+
+    protected function getAnons(array $anonses, $postId): ?string
+    {
+        foreach ($anonses as $anons) {
+            if ($anons->id === $postId) {
+                return $anons->anons;
+            }
+        }
+        return null;
     }
 
     protected function unwrapParent(stdClass $post): stdClass

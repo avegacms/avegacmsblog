@@ -29,6 +29,7 @@ class Posts extends AvegaCmsAPI
 
     public function __construct()
     {
+
         parent::__construct();
         $this->BPM          = new BlogPostsModel();
         $this->CM           = new ContentModel();
