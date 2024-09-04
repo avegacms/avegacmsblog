@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace AvegaCmsBlog\Models;
 
 use AvegaCms\Models\Admin\ContentModel;
+use AvegaCms\Models\Admin\FilesModel;
 use AvegaCms\Models\Admin\MetaDataModel;
 use stdClass;
 
@@ -13,6 +14,7 @@ class BlogPostsModel extends MetaDataModel
     protected TagsLinksModel $TLM;
     protected TagsModel $TM;
     protected ContentModel $CM;
+    protected FilesModel $FM;
 
     public function __construct()
     {
@@ -21,6 +23,9 @@ class BlogPostsModel extends MetaDataModel
         $this->TLM = new TagsLinksModel();
         $this->TM  = new TagsModel();
         $this->CM  = new ContentModel();
+        $this->FM  = new FilesModel();
+
+
     }
 
     public function getBlogPosts(int $moduleId, array $filter, bool $hide = false): array
@@ -37,18 +42,28 @@ class BlogPostsModel extends MetaDataModel
             ? $this->getMetadataModule($moduleId)->where(['parent !=' => 0])->filter($filter)->apiPagination()
             : $this->getMetadataModule($moduleId)->filter($filter)->apiPagination();
 
-        if (empty($posts))
-        {
+        if (empty($posts)) {
             return [];
         }
 
-        $tags = $this->TLM->getTagsOfPosts($posts['list'], $hide);
-        $anonses = $this->CM->select(['id','anons'])->whereIn('id', array_column($posts['list'], 'id'))->findAll();
+        $tags    = $this->TLM->getTagsOfPosts($posts['list'], $hide);
+        $anonses = $this->CM->select(['id', 'anons'])
+            ->whereIn('id', array_column($posts['list'], 'id'))->findAll();
+        $previews = $this->FM->select(['id', 'data'])
+            ->whereIn('id', array_column($posts['list'], 'preview_id'))->findAll();
+        $categories = cache()->remember(
+            'blog_categories',
+            DAY,
+            fn () => $this->select(['id', 'title'])->findAll()
+        );
 
-        foreach ($posts['list'] as &$post) {
-            $post       = $this->unwrapParent($post);
-            $post->tags = $this->filterTags($tags, $post->id);
-            $post->anons = $this->getAnons($anonses, $post->id);
+        foreach ($posts['list'] as $post) {
+            $post->parent  = $this->unwrapParent($categories, $post->parent);
+            $post->tags    = $this->filterTags($tags, $post->id);
+            $post->anons   = $this->getAnons($anonses, $post->id);
+            $post->preview = $this->getPreview($previews, (int) $post->preview_id);
+
+            unset($post->preview_id);
         }
 
         return $posts;
@@ -62,13 +77,37 @@ class BlogPostsModel extends MetaDataModel
             return null;
         }
 
-        $post = $this->unwrapParent($post);
+        $categories = cache()->remember(
+            'blog_categories',
+            DAY,
+            fn () => $this->select(['id', 'title'])->findAll()
+        );
+
+        $post->parent = $this->unwrapParent($categories, $post->parent);
 
         $tags = $this->TLM->getTagsOfPosts([$post], $hide);
-
         $post->tags = $this->filterTags($tags, $post->id);
 
+        $previews = $this->FM->select(['id', 'data'])->where(['id' => $post->preview_id])->first();
+
+        $post->preview = ($previews !== null)
+            ? $this->getPreview([$previews], (int) $post->preview_id)
+            : null;
+
+        unset($post->preview_id);
+
         return $post;
+    }
+
+    protected function getPreview(array $previews, $fileId): ?array
+    {
+        foreach ($previews as $preview) {
+            if ($preview->id === $fileId) {
+                return $preview->data;
+            }
+        }
+
+        return null;
     }
 
     protected function getAnons(array $anonses, $postId): ?string
@@ -78,32 +117,29 @@ class BlogPostsModel extends MetaDataModel
                 return $anons->anons;
             }
         }
+
         return null;
     }
 
-    protected function unwrapParent(stdClass $post): stdClass
+    protected function unwrapParent(array $categories, int $parentId): ?array
     {
-        $categories = cache()->remember('blog_categories', DAY, fn () => $this->select(['id', 'title'])->findAll());
-
         $parent = null;
 
         foreach ($categories as $category) {
-            if ($category->id === $post->parent) {
+            if ($category->id === $parentId) {
                 $parent = $category;
                 break;
             }
         }
 
         if ($parent === null) {
-            return $post;
+            return null;
         }
 
-        $post->parent = [
+        return [
             'value' => $parent->id,
             'label' => $parent->title,
         ];
-
-        return $post;
     }
 
     protected function filterTags(array $tags, int $postId): array

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AvegaCmsBlog\Controllers\Admin;
+namespace AvegaCmsBlog\Controllers\Api\Admin;
 
 use AvegaCms\Controllers\Api\AvegaCmsAPI;
 use AvegaCms\Enums\MetaDataTypes;
@@ -32,7 +32,7 @@ class Category extends AvegaCmsAPI
     {
         return $this->cmsRespond($this->MDM->select(
             ['id', 'url', 'slug', 'meta']
-        )->where(['category_mid' => $this->category_mid])->findAll());
+        )->where(['module_id' => $this->category_mid])->findAll());
     }
 
     public function new(): ResponseInterface
@@ -67,7 +67,7 @@ class Category extends AvegaCmsAPI
             if (($id = $this->MDM->insert([
                 'parent'          => $this->meta_blog_id,
                 'locale_id'       => 1,
-                'category_mid'    => $this->category_mid,
+                'module_id'    => $this->category_mid,
                 'slug'            => mb_url_title(mb_strtolower($data['title'])),
                 'item_id'         => 0,
                 'title'           => $data['title'],
@@ -92,7 +92,7 @@ class Category extends AvegaCmsAPI
 
     public function update(int $id): ResponseInterface
     {
-        if (($category = $this->MDM->where(['category_mid' => $this->category_mid])->find($id)) === null) {
+        if (($category = $this->MDM->where(['module_id' => $this->category_mid])->find($id)) === null) {
             return $this->failNotFound();
         }
 
@@ -126,7 +126,7 @@ class Category extends AvegaCmsAPI
             $data['slug']             = mb_url_title(mb_strtolower($data['title']));
             $data['parent']           = $category->parent;
             $data['updated_by_id']    = $this->userData->userId;
-            $data['category_mid']     = $category->category_mid;
+            $data['module_id']     = $category->category_mid;
             $data['item_id']          = $category->item_id;
             $data['use_url_pattern']  = $category->use_url_pattern;
             $data['meta']             = $category->meta;
@@ -147,7 +147,7 @@ class Category extends AvegaCmsAPI
 
     public function delete(int $id): ResponseInterface
     {
-        if ($this->MDM->where(['id' => $id, 'category_mid' => $this->category_mid])->first() === null) {
+        if ($this->MDM->where(['id' => $id, 'module_id' => $this->category_mid])->first() === null) {
             return $this->failNotFound();
         }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace AvegaCmsBlog\Controllers\Admin;
+namespace AvegaCmsBlog\Controllers\Api\Admin;
 
 use AvegaCms\Controllers\Api\AvegaCmsAPI;
 use AvegaCms\Traits\AvegaCmsApiResponseTrait;

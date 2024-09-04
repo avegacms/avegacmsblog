@@ -2,19 +2,23 @@
 
 declare(strict_types=1);
 
-namespace AvegaCmsBlog\Controllers\Admin;
+namespace AvegaCmsBlog\Controllers\Api\Admin;
 
 use AvegaCms\Controllers\Api\AvegaCmsAPI;
 use AvegaCms\Enums\MetaDataTypes;
 use AvegaCms\Enums\MetaStatuses;
 use AvegaCms\Models\Admin\ContentModel;
+use AvegaCms\Utilities\Cms;
+use AvegaCms\Utilities\CmsFileManager;
 use AvegaCms\Utilities\CmsModule;
+use AvegaCms\Utilities\Exceptions\UploaderException;
 use AvegaCmsBlog\Models\BlogPostsModel;
 use AvegaCmsBlog\Models\TagsLinksModel;
 use AvegaCmsBlog\Models\TagsModel;
 use CodeIgniter\HTTP\Exceptions\HTTPException;
 use CodeIgniter\HTTP\ResponseInterface;
 use Exception;
+use JsonException;
 use ReflectionException;
 use RuntimeException;
 
@@ -29,7 +33,6 @@ class Posts extends AvegaCmsAPI
 
     public function __construct()
     {
-
         parent::__construct();
         $this->BPM          = new BlogPostsModel();
         $this->CM           = new ContentModel();
@@ -55,6 +58,7 @@ class Posts extends AvegaCmsAPI
             'tags',
             'content',
             'extra',
+            'preview_id',
         ]);
     }
 
@@ -78,7 +82,7 @@ class Posts extends AvegaCmsAPI
             if (env('CI_ENVIRONMENT') === 'development') {
                 log_message(
                     'error',
-                    sprintf('[Blog : Post Creation] : %s', $e->getMessage())
+                    sprintf('[Blog : Post Creation] : %s & %s', $e->getMessage(), $e->getTraceAsString())
                 );
             }
 
@@ -97,8 +101,6 @@ class Posts extends AvegaCmsAPI
 
     public function update(int $id): ResponseInterface
     {
-        // Сюда добавить транзакцию или сместить всё в конец,
-        // чтобы сначала прошли все проверки, а в конце вставку?
         try {
             if (($post = $this->BPM->getBlogPost($id, $this->post_mid)) === null) {
                 return $this->failNotFound();
@@ -109,18 +111,22 @@ class Posts extends AvegaCmsAPI
             $this->CM->delete($post->id);
             $this->TLM->where(['meta_id' => $post->id])->delete();
 
-            if ( $this->BPM->update($id, ['id' => $id, ...$this->getMetaArray($data)]) === false)
-            {
+            $update_array = $this->getMetaArray($data);
+
+            $update_array['meta'] = $post->meta;
+            $update_array['meta']['title'] = $data['title'];
+            $update_array['meta']['og:title'] = $data['title'];
+
+            if ($this->BPM->update($id, ['id' => $id, ...$update_array]) === false) {
                 return $this->cmsRespondFail($this->BPM->errors());
             }
 
             $this->setContent($id, $data);
-
         } catch (Exception $e) {
             if (env('CI_ENVIRONMENT') === 'development') {
                 log_message(
                     'error',
-                    sprintf('[Blog : Post updating] : %s', $e->getMessage())
+                    sprintf('[Blog : Post updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
                 );
             }
 
@@ -143,6 +149,49 @@ class Posts extends AvegaCmsAPI
         return $this->respondNoContent();
     }
 
+    public function upload(int $id): ResponseInterface
+    {
+        if ($this->BPM->where([
+            'module_id' => $this->post_mid,
+        ])->find($id) === null) {
+            return $this->failNotFound();
+        }
+
+        try {
+            $preview = CmsFileManager::upload(
+                [
+                    'module_id' => (int) CmsModule::meta('blog')['id'],
+                    'entity_id' => 1,
+                    'item_id'   => 1,
+                    'user_id'   => $this->userData->userId,
+                ],
+                [
+                    'field'     => 'file',
+                    'directory' => 'blog',
+                    'extType'   => 'images',
+                    'maxDims'   => '4096,4096',
+                    'maxSize'   => 24576,
+                ],
+                [
+                    'resize' => json_decode(
+                        Cms::settings('core.env.blog'),
+                        true,
+                        512,
+                        JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE
+                    ),
+                ]
+            )[0];
+
+            if (! $this->BPM->update($id, ['id' => $id, 'preview_id' => (int) $preview->id])) {
+                return $this->failValidationErrors($this->BPM->errors());
+            }
+
+            return $this->respondNoContent();
+        } catch (JsonException|ReflectionException|UploaderException $e) {
+            return $this->failValidationErrors(empty($e->getMessages()) ? $e->getMessage() : $e->getMessages());
+        }
+    }
+
     protected function getValidated(array $data): array
     {
         if (empty($data)) {
@@ -152,7 +201,7 @@ class Posts extends AvegaCmsAPI
         $rules = $this->rules();
 
         if ($this->validateData($data, $rules) === false) {
-            throw new RuntimeException(implode(' и ',$this->validator->getErrors()));
+            throw new RuntimeException(implode(' и ', $this->validator->getErrors()));
         }
 
         if ($this->BPM->where(['id' => $data['category'], 'module_id' => $this->category_mid])->first() === null) {
@@ -168,7 +217,7 @@ class Posts extends AvegaCmsAPI
 
     protected function getMetaArray(array $data): array
     {
-        return [
+        $array = [
             'parent'          => $data['category'],
             'locale_id'       => 1,
             'module_id'       => $this->post_mid,
@@ -178,12 +227,22 @@ class Posts extends AvegaCmsAPI
             'title'           => $data['title'],
             'url'             => 'blog/post/{slug}_{id}',
             'use_url_pattern' => true,
-            'meta'            => [],
             'status'          => $data['status'],
             'meta_type'       => MetaDataTypes::Module->name,
             'in_sitemap'      => true,
             'created_by_id'   => $this->userData->userId,
         ];
+
+        if (isset($data['preview_id']))
+        {
+            $array['preview_id'] = (int) $data['preview_id'];
+        }
+
+        if (isset($data['meta'])){
+            $array['meta']  = [];
+
+        }
+        return $array;
     }
 
     /**
@@ -192,18 +251,19 @@ class Posts extends AvegaCmsAPI
     protected function setContent(int $id, array $data): void
     {
         if ($this->CM->insert([
-                'id'      => $id,
-                'anons'   => $data['anons'],
-                'content' => $data['content'],
-                'extra'   => $data['extra'] ?? null,
-            ]) === false) {
+            'id'      => $id,
+            'anons'   => $data['anons'],
+            'content' => $data['content'],
+            'extra'   => $data['extra'] ?? null,
+        ]) === false) {
             throw new RuntimeException(implode(' и ', $this->CM->errors()));
         }
 
         if (isset($data['tags'])) {
             $data['tags'] = array_unique($data['tags']);
             $tags         = array_column($this->TM->getTags(), 'name', 'id');
-            $batch = [];
+            $batch        = [];
+
             foreach ($data['tags'] as $tag) {
                 if (isset($tags[$tag]) === false) {
                     throw new RuntimeException('Тег ' . $tag . ' не существует');
@@ -216,19 +276,17 @@ class Posts extends AvegaCmsAPI
                 ];
             }
 
-            if (empty($batch))
-            {
+            if (empty($batch)) {
                 return;
             }
 
-            if ($this->TLM->insertbatch($batch) !== count($batch))
-            {
+            if ($this->TLM->insertbatch($batch) !== count($batch)) {
                 throw new RuntimeException(implode(' и ', $this->TLM->errors()));
             }
         }
     }
 
-    protected function rules() : array
+    protected function rules(): array
     {
         return [
             'title' => [
@@ -263,6 +321,10 @@ class Posts extends AvegaCmsAPI
                 'rules' => 'required|in_list[' . implode(',', MetaStatuses::get('name')) . ']',
                 'label' => 'Статус',
             ],
+            'preview_id' => [
+                'rules' => 'permit_empty|is_natural_no_zero|is_not_unique[files.id]',
+                'label' => 'Номер превью'
+            ]
         ];
     }
 }

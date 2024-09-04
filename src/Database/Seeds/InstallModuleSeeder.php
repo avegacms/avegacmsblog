@@ -2,6 +2,9 @@
 
 namespace AvegaCmsBlog\Database\Seeds;
 
+use AvegaCms\Enums\FieldsReturnTypes;
+use AvegaCms\Utilities\Cms;
+use AvegaCms\Utilities\CmsFileManager;
 use AvegaCms\Utilities\CmsModule;
 use CodeIgniter\Database\Seeder;
 use Exception;
@@ -20,16 +23,42 @@ class InstallModuleSeeder extends Seeder
                 'slug'        => 'blog',
                 'subModules'  => ['category', 'post'],
                 'roles'       => ['root', 'admin'],
-                'className'   => 'Posts',
+                'className'   => 'AvegaCmsBlog',
                 'urlPatterns' => [
                     'blog'     => 'blog',
                     'category' => 'blog/{slug}',
-                    'post'     => 'blog/{slug}/{post}',
+                    'post'     => 'blog/{slug}_{id}',
                 ],
                 'inSitemap' => true,
             ]
         );
+        CmsModule::createModulePage('blog', 'Блог', 'blog', slug: 'blog');
 
-        CmsModule::createModulePage('blog', 'Блог', 'blog');
+        CmsFileManager::createDirectory(
+            'blog',
+            [
+                'module_id' => CmsModule::meta('blog')['id'],
+            ]
+        );
+
+        Cms::settings('core.env.blog', json_encode([
+            'big' => [
+                'width'     => 1024,
+                'height'    => 512,
+                'masterDim' => 'height',
+                'quality'   => 90,
+            ],
+            'mini' => [
+                'width'     => 64,
+                'height'    => 32,
+                'masterDim' => 'height',
+                'quality'   => 90,
+            ],
+        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE), [
+            'return_type' => FieldsReturnTypes::Json->value,
+            'label'       => 'Settings.label.env.blog',
+            'context'     => 'Settings.context.env.blog',
+            'is_core'     => 1,
+        ]);
     }
 }

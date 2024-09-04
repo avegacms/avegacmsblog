@@ -21,7 +21,7 @@ class TestingSeeder extends Seeder
      * @throws RandomException
      * @throws ReflectionException
      */
-    public function run()
+    public function run(): void
     {
         $MDM = new MetaDataModel();
         $TM  = new TagsModel();
@@ -57,7 +57,7 @@ class TestingSeeder extends Seeder
                 'slug'            => mb_url_title(mb_strtolower($title)),
                 'item_id'         => 0,
                 'title'           => $title,
-                'url'             => 'blog/category/{slug}',
+                'url'             => 'blog/{slug}',
                 'use_url_pattern' => true,
                 'meta'            => [],
                 'status'          => MetaStatuses::Publish->name,
@@ -118,7 +118,7 @@ class TestingSeeder extends Seeder
 
         for ($i = 0; $i < $countOfPosts; $i++) {
             CLI::showProgress($i + 1, $countOfPosts);
-            $title = $faker->title();
+            $title = $faker->realTextBetween(2,48);
 
             $category = $categories[random_int(0, count($categories) - 1)];
 
@@ -140,7 +140,7 @@ class TestingSeeder extends Seeder
             ])) === false) {
                 d($MDM->errors());
                 CLI::newLine();
-
+                $i -= 0.5;
                 continue;
             }
 
