@@ -20,7 +20,7 @@ class Sitemap extends Controller
      */
     public function generate(): void
     {
-        $post = CmsModule::meta('blog.post')['id'];
+        $post     = CmsModule::meta('blog.post')['id'];
         $category = CmsModule::meta('blog.category')['id'];
 
         $array = [
@@ -28,27 +28,26 @@ class Sitemap extends Controller
             ...(new MetaDataSiteMapModel())->getContentSitemap('Module', $post),
         ];
 
-        $MDM = (new MetaDataModel())->select(['id','slug'])
+        $MDM = (new MetaDataModel())->select(['id', 'slug'])
             ->orWhere(['module_id' => $post])
             ->orWhere(['module_id' => $category])
             ->findAll();
 
         foreach ($array as $number => $page) {
             $id = null;
+
             foreach ($MDM as $key => $item) {
-                if ($array[$number]->id === $MDM[$key]->id)
-                {
+                if ($array[$number]->id === $MDM[$key]->id) {
                     $id = $key;
                     break;
                 }
             }
 
-            if (empty($id))
-            {
+            if (empty($id)) {
                 continue;
             }
 
-            $page->url = str_replace(['{slug}', '{id}'], [$MDM[$key]->slug, $MDM[$key]->id], $page->url) ;
+            $page->url = str_replace(['{slug}', '{id}'], [$MDM[$key]->slug, $MDM[$key]->id], $page->url);
         }
 
         $this->moduleName = 'AvegaCmsBlog';

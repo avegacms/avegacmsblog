@@ -56,8 +56,8 @@ class InstallModuleSeeder extends Seeder
             ],
         ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE), [
             'return_type' => FieldsReturnTypes::Json->value,
-            'label'       => 'Settings.label.env.blog',
-            'context'     => 'Settings.context.env.blog',
+            'label'       => 'Blog.label.env.blog',
+            'context'     => 'Blog.context.env.blog',
             'is_core'     => 1,
         ]);
     }

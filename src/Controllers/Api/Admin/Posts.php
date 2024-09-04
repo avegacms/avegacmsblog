@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace AvegaCmsBlog\Controllers\Api\Admin;
 
-use AvegaCms\Controllers\Api\AvegaCmsAPI;
+use AvegaCms\Controllers\Api\Admin\AvegaCmsAdminAPI;
 use AvegaCms\Enums\MetaDataTypes;
 use AvegaCms\Enums\MetaStatuses;
 use AvegaCms\Models\Admin\ContentModel;
@@ -22,7 +22,7 @@ use JsonException;
 use ReflectionException;
 use RuntimeException;
 
-class Posts extends AvegaCmsAPI
+class Posts extends AvegaCmsAdminAPI
 {
     protected ContentModel $CM;
     protected TagsModel $TM;
@@ -113,8 +113,8 @@ class Posts extends AvegaCmsAPI
 
             $update_array = $this->getMetaArray($data);
 
-            $update_array['meta'] = $post->meta;
-            $update_array['meta']['title'] = $data['title'];
+            $update_array['meta']             = $post->meta;
+            $update_array['meta']['title']    = $data['title'];
             $update_array['meta']['og:title'] = $data['title'];
 
             if ($this->BPM->update($id, ['id' => $id, ...$update_array]) === false) {
@@ -194,10 +194,6 @@ class Posts extends AvegaCmsAPI
 
     protected function getValidated(array $data): array
     {
-        if (empty($data)) {
-            throw new RuntimeException('Запрос пустой');
-        }
-
         $rules = $this->rules();
 
         if ($this->validateData($data, $rules) === false) {
@@ -233,15 +229,14 @@ class Posts extends AvegaCmsAPI
             'created_by_id'   => $this->userData->userId,
         ];
 
-        if (isset($data['preview_id']))
-        {
+        if (isset($data['preview_id'])) {
             $array['preview_id'] = (int) $data['preview_id'];
         }
 
-        if (isset($data['meta'])){
-            $array['meta']  = [];
-
+        if (isset($data['meta'])) {
+            $array['meta'] = [];
         }
+
         return $array;
     }
 
@@ -323,8 +318,8 @@ class Posts extends AvegaCmsAPI
             ],
             'preview_id' => [
                 'rules' => 'permit_empty|is_natural_no_zero|is_not_unique[files.id]',
-                'label' => 'Номер превью'
-            ]
+                'label' => 'Номер превью',
+            ],
         ];
     }
 }

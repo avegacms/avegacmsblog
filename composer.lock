@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/avegacms/avegacms.git",
-                "reference": "f6d564610fb061b3288566fabbb19f4bdc549f32"
+                "reference": "edc2bb7fbda413117a96349650d9fecffa96782b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/avegacms/avegacms/zipball/f6d564610fb061b3288566fabbb19f4bdc549f32",
-                "reference": "f6d564610fb061b3288566fabbb19f4bdc549f32",
+                "url": "https://api.github.com/repos/avegacms/avegacms/zipball/edc2bb7fbda413117a96349650d9fecffa96782b",
+                "reference": "edc2bb7fbda413117a96349650d9fecffa96782b",
                 "shasum": ""
             },
             "require": {
@@ -58,7 +58,7 @@
                 "issues": "https://github.com/avegacms/avegacms/issues",
                 "source": "https://github.com/avegacms/avegacms/tree/master"
             },
-            "time": "2024-09-04T03:50:01+00:00"
+            "time": "2024-09-04T11:48:29+00:00"
         },
         {
             "name": "clue/ndjson-react",
@@ -3657,12 +3657,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "43e7c3e6a484e538453f89dfa6a6f308c32792da"
+                "reference": "464362559b7a88afcf1839195dd44cace43603b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/43e7c3e6a484e538453f89dfa6a6f308c32792da",
-                "reference": "43e7c3e6a484e538453f89dfa6a6f308c32792da",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/464362559b7a88afcf1839195dd44cace43603b6",
+                "reference": "464362559b7a88afcf1839195dd44cace43603b6",
                 "shasum": ""
             },
             "require": {
@@ -3734,7 +3734,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.5.31"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/10.5"
             },
             "funding": [
                 {
@@ -3750,7 +3750,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-03T11:57:55+00:00"
+            "time": "2024-09-04T11:31:48+00:00"
         },
         {
             "name": "sebastian/cli-parser",

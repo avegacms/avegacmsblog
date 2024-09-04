@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace AvegaCmsBlog\Controllers\Api\Admin;
 
-use AvegaCms\Controllers\Api\AvegaCmsAPI;
+use AvegaCms\Controllers\Api\Admin\AvegaCmsAdminAPI;
 use AvegaCms\Enums\MetaDataTypes;
 use AvegaCms\Enums\MetaStatuses;
 use AvegaCms\Models\Admin\MetaDataModel;
 use AvegaCms\Utilities\CmsModule;
+use AvegaCmsBlog\Models\BlogPostsModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use Exception;
 use RuntimeException;
 
-class Category extends AvegaCmsAPI
+class Category extends AvegaCmsAdminAPI
 {
     protected MetaDataModel $MDM;
+    protected BlogPostsModel $BPM;
     protected int $category_mid;
     protected int $meta_blog_id;
 
@@ -24,15 +26,26 @@ class Category extends AvegaCmsAPI
         parent::__construct();
 
         $this->MDM          = new MetaDataModel();
+
+        $this->MDM->findAll();
+
+        $this->BPM          = new BlogPostsModel();
         $this->meta_blog_id = (int) $this->MDM->getMetadataModule((int) CmsModule::meta('blog')['id'])->first()->id;
         $this->category_mid = (int) CmsModule::meta('blog.category')['id'];
     }
 
     public function index(): ResponseInterface
     {
-        return $this->cmsRespond($this->MDM->select(
-            ['id', 'url', 'slug', 'meta']
-        )->where(['module_id' => $this->category_mid])->findAll());
+        return $this->cmsRespond(
+            $this->BPM->select(
+                ['metadata.id', 'metadata.url', 'metadata.slug', 'metadata.meta', 'COUNT(metadata.id) as num']
+            )
+                ->where(['metadata.module_id' => $this->category_mid])
+                ->join('metadata as MD', 'metadata.id = MD.parent')
+                ->groupBy('metadata.id')
+                ->filter(request()->getGet())
+                ->apiPagination()
+        );
     }
 
     public function new(): ResponseInterface
@@ -47,27 +60,12 @@ class Category extends AvegaCmsAPI
         try {
             $data = $this->getApiData();
 
-            if (empty($data)) {
-                throw new RuntimeException('Запрос пустой');
-            }
-
-            $rules = [
-                'title' => [
-                    'rules' => 'required|min_length[1]|max_length[255]|string',
-                    'label' => 'Заголовок',
-                ],
-            ];
-
-            if ($this->validateData($data, $rules) === false) {
-                return $this->cmsRespondFail($this->validator->getErrors());
-            }
-
-            $data = $this->validator->getValidated();
+            $data = $this->getValidated($data);
 
             if (($id = $this->MDM->insert([
                 'parent'          => $this->meta_blog_id,
                 'locale_id'       => 1,
-                'module_id'    => $this->category_mid,
+                'module_id'       => $this->category_mid,
                 'slug'            => mb_url_title(mb_strtolower($data['title'])),
                 'item_id'         => 0,
                 'title'           => $data['title'],
@@ -99,34 +97,19 @@ class Category extends AvegaCmsAPI
         try {
             $data = $this->getApiData();
 
-            if (empty($data)) {
-                throw new RuntimeException('Запрос пустой');
-            }
-
-            $rules = [
-                'title' => [
-                    'rules' => 'required|min_length[1]|max_length[255]|string',
-                    'label' => 'Заголовок',
-                ],
-            ];
-
-            if ($this->validateData($data, $rules) === false) {
-                return $this->cmsRespondFail($this->validator->getErrors());
-            }
-
-            $data = $this->validator->getValidated();
+            $data = $this->getValidated($data);
 
             // Правильно уникальности составного ключа при обновлении
             // Не подбирает себе данные с обновляемого поста
             // И думает что поля не установлены, и валит ошибку
             // Так что необходимо явно установить все составляющие ключа
-            // Это parent category_mid item_id use_url_pattern slug
+            // Это parent module_id item_id use_url_pattern slug
             // + ID, чтобы не было ошибки уникальности
             $data['id']               = $id;
             $data['slug']             = mb_url_title(mb_strtolower($data['title']));
             $data['parent']           = $category->parent;
             $data['updated_by_id']    = $this->userData->userId;
-            $data['module_id']     = $category->category_mid;
+            $data['module_id']        = $category->module_id;
             $data['item_id']          = $category->item_id;
             $data['use_url_pattern']  = $category->use_url_pattern;
             $data['meta']             = $category->meta;
@@ -157,5 +140,25 @@ class Category extends AvegaCmsAPI
         cache()->delete('blog_categories');
 
         return $this->respondNoContent();
+    }
+
+    /**
+     * @param array $data
+     * @return array
+     */
+    protected function getValidated(array $data): array
+    {
+        $rules = [
+            'title' => [
+                'rules' => 'required|min_length[1]|max_length[255]|string',
+                'label' => 'Заголовок',
+            ],
+        ];
+
+        if ($this->validateData($data, $rules) === false) {
+            throw new RuntimeException(implode(' и ', $this->validator->getErrors()));
+        }
+
+        return $this->validator->getValidated();
     }
 }

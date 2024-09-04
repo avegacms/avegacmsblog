@@ -6,12 +6,11 @@ use AvegaCms\Controllers\AvegaCmsFrontendController;
 use AvegaCms\Utilities\CmsModule;
 use AvegaCmsBlog\Models\BlogPostsModel;
 use CodeIgniter\HTTP\ResponseInterface;
-use JetBrains\PhpStorm\NoReturn;
 use ReflectionException;
 
 class Category extends AvegaCmsFrontendController
 {
-    protected ?string $moduleKey = 'blog.category';
+    protected ?string $moduleKey    = 'blog.category';
     protected bool $useTemplateMeta = true;
 
     /**
@@ -23,16 +22,19 @@ class Category extends AvegaCmsFrontendController
 
         if (($category = $BPM->select(['id', 'slug', 'module_id'])->where(
             [
-                'slug' => $slug,
-                'module_id' => (int) CmsModule::meta('blog.category')['id']
-            ])->first()) === null) {
+                'slug'      => $slug,
+                'module_id' => (int) CmsModule::meta('blog.category')['id'],
+            ]
+        )->first()) === null) {
             $this->error404();
         }
-        $filter = $_GET;
+        $filter           = $_GET;
         $filter['parent'] = $category->id;
+
         return $this->render(['posts' => $BPM->getBlogPosts(
             (int) CmsModule::meta('blog.post')['id'],
             $filter,
-            true)], 'blog');
+            true
+        )], 'blog');
     }
 }

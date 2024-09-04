@@ -4,28 +4,31 @@ declare(strict_types=1);
 
 namespace AvegaCmsBlog\Controllers\Api\Admin;
 
-use AvegaCms\Controllers\Api\AvegaCmsAPI;
+use AvegaCms\Controllers\Api\Admin\AvegaCmsAdminAPI;
 use AvegaCms\Traits\AvegaCmsApiResponseTrait;
+use AvegaCmsBlog\Models\TagsLinksModel;
 use AvegaCmsBlog\Models\TagsModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use Exception;
 use RuntimeException;
 
-class Tags extends AvegaCmsAPI
+class Tags extends AvegaCmsAdminAPI
 {
     use AvegaCmsApiResponseTrait;
 
     protected TagsModel $TM;
+    protected TagsLinksModel $TLM;
 
     public function __construct()
     {
         parent::__construct();
         $this->TM = new TagsModel();
+        $this->TLM = new TagsLinksModel();
     }
 
     public function index(): ResponseInterface
     {
-        return $this->cmsRespond($this->TM->select(['id', 'name', 'slug', 'active', 'created_by_id'])->findAll());
+        return $this->cmsRespond($this->TLM->getTags(request()->getGet()));
     }
 
     public function new(): ResponseInterface
@@ -40,22 +43,9 @@ class Tags extends AvegaCmsAPI
         try {
             $data = $this->getApiData();
 
-            if (empty($data)) {
-                throw new RuntimeException('Запрос пустой');
-            }
+            $data['active'] = 1;
 
-            $rules = [
-                'name' => [
-                    'rules' => 'required|string|min_length[3]|max_length[128]',
-                    'label' => 'Название',
-                ],
-            ];
-
-            if ($this->validateData($data, $rules) === false) {
-                return $this->cmsRespondFail($this->validator->getErrors());
-            }
-
-            $data = $this->validator->getValidated();
+            $data = $this->getValidated($data);
 
             if (($id = $this->TM->insert([
                 'name'          => trim($data['name']),
@@ -81,25 +71,7 @@ class Tags extends AvegaCmsAPI
 
             $data = $this->getApiData();
 
-            if (empty($data)) {
-                throw new RuntimeException('Запрос пустой');
-            }
-
-            $rules = [
-                'name' => [
-                    'rules' => 'required|min_length[3]|max_length[128]',
-                    'label' => 'Название',
-                ],
-                'active' => [
-                    'rules' => 'required|in_list[0,1]',
-                    'label' => 'Активность',
-                ],
-            ];
-
-            if ($this->validateData($data, $rules) === false) {
-                return $this->cmsRespondFail($this->validator->getErrors());
-            }
-            $data = $this->validator->getValidated();
+            $data = $this->getValidated($data);
 
             // Необходимо явно передать ID
             // Так как CI4 не подтягивает его сам
@@ -129,5 +101,25 @@ class Tags extends AvegaCmsAPI
         $this->TM->delete($id);
 
         return $this->respondNoContent();
+    }
+
+    protected function getValidated(array $data) : array
+    {
+        $rules = [
+            'name' => [
+                'rules' => 'required|min_length[3]|max_length[128]',
+                'label' => 'Название',
+            ],
+            'active' => [
+                'rules' => 'required|in_list[0,1]',
+                'label' => 'Активность',
+            ],
+        ];
+
+        if ($this->validateData($data, $rules) === false) {
+            throw new RuntimeException(implode(' и ', $this->validator->getErrors()));
+        }
+
+        return $this->validator->getValidated();
     }
 }

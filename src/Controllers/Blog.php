@@ -12,7 +12,6 @@ use ReflectionException;
 class Blog extends AvegaCmsFrontendController
 {
     protected ?string $moduleKey = 'blog';
-
     protected int $category_mid;
     protected int $post_mid;
 
@@ -20,7 +19,7 @@ class Blog extends AvegaCmsFrontendController
     public function __construct()
     {
         $this->category_mid = (int) CmsModule::meta('blog.category')['id'];
-        $this->post_mid = (int) CmsModule::meta('blog.post')['id'];
+        $this->post_mid     = (int) CmsModule::meta('blog.post')['id'];
 
         parent::__construct();
     }

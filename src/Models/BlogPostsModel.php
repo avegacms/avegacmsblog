@@ -14,8 +14,7 @@ class BlogPostsModel extends MetaDataModel
     protected TagsLinksModel $TLM;
     protected TagsModel $TM;
     protected ContentModel $CM;
-    protected FilesModel $FM;
-
+    protected bool $hide;
     public function __construct()
     {
         parent::__construct();
@@ -23,7 +22,68 @@ class BlogPostsModel extends MetaDataModel
         $this->TLM = new TagsLinksModel();
         $this->TM  = new TagsModel();
         $this->CM  = new ContentModel();
-        $this->FM  = new FilesModel();
+    }
+    protected function initialize(): void
+    {
+        $this->casts['num'] = 'int';
+        $this->afterFind[] = 'getTags';
+        $this->afterFind[] = 'getParent';
+    }
+
+    protected function getTags(array $data): array
+    {
+        if (isset($this->hide) === false)
+        {
+            return $data;
+        }
+
+        if ($data['singleton'] === false)
+        {
+            $tags    = $this->TLM->getTagsOfPosts($data['data'], $this->hide);
+            foreach ($data['data'] as $item)
+            {
+                $item->tags = [];
+                foreach ($tags as $tag) {
+                    if ($tag->meta_id === $item->id) {
+                        $item->tags[] = [
+                            'label' => $tag->label,
+                            'value' => (int) $tag->value,
+                        ];
+                    }
+                }
+
+            }
+        }
+        else {
+            $tags    = $this->TLM->getTagsOfPosts([$data['data']], $this->hide);
+            $data['data']->tags = [];
+            foreach ($tags as $tag) {
+                if ($tag->meta_id === $data['data']->id) {
+                    $data['data']->tags[] = [
+                        'label' => $tag->label,
+                        'value' => (int) $tag->value,
+                    ];
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    protected function getParent(array $data): array
+    {
+        if (isset($this->hide) === false)
+        {
+            return $data;
+        }
+
+        $categories = cache()->remember(
+            'blog_categories',
+            DAY,
+            fn () => $this->select(['id', 'title'])->findAll()
+        );
+
+        // TODO
 
 
     }
@@ -38,6 +98,8 @@ class BlogPostsModel extends MetaDataModel
             unset($filter['tags']);
         }
 
+        $this->hide = $hide;
+
         $posts = ($hide)
             ? $this->getMetadataModule($moduleId)->where(['parent !=' => 0])->filter($filter)->apiPagination()
             : $this->getMetadataModule($moduleId)->filter($filter)->apiPagination();
@@ -46,24 +108,12 @@ class BlogPostsModel extends MetaDataModel
             return [];
         }
 
-        $tags    = $this->TLM->getTagsOfPosts($posts['list'], $hide);
         $anonses = $this->CM->select(['id', 'anons'])
             ->whereIn('id', array_column($posts['list'], 'id'))->findAll();
-        $previews = $this->FM->select(['id', 'data'])
-            ->whereIn('id', array_column($posts['list'], 'preview_id'))->findAll();
-        $categories = cache()->remember(
-            'blog_categories',
-            DAY,
-            fn () => $this->select(['id', 'title'])->findAll()
-        );
 
         foreach ($posts['list'] as $post) {
             $post->parent  = $this->unwrapParent($categories, $post->parent);
-            $post->tags    = $this->filterTags($tags, $post->id);
             $post->anons   = $this->getAnons($anonses, $post->id);
-            $post->preview = $this->getPreview($previews, (int) $post->preview_id);
-
-            unset($post->preview_id);
         }
 
         return $posts;
@@ -71,6 +121,8 @@ class BlogPostsModel extends MetaDataModel
 
     public function getBlogPost(int $id, int $module, $hide = false): ?stdClass
     {
+        $this->hide = $hide;
+
         $post = $this->getMetadata($id, $module);
 
         if ($post === null) {
@@ -85,29 +137,7 @@ class BlogPostsModel extends MetaDataModel
 
         $post->parent = $this->unwrapParent($categories, $post->parent);
 
-        $tags = $this->TLM->getTagsOfPosts([$post], $hide);
-        $post->tags = $this->filterTags($tags, $post->id);
-
-        $previews = $this->FM->select(['id', 'data'])->where(['id' => $post->preview_id])->first();
-
-        $post->preview = ($previews !== null)
-            ? $this->getPreview([$previews], (int) $post->preview_id)
-            : null;
-
-        unset($post->preview_id);
-
         return $post;
-    }
-
-    protected function getPreview(array $previews, $fileId): ?array
-    {
-        foreach ($previews as $preview) {
-            if ($preview->id === $fileId) {
-                return $preview->data;
-            }
-        }
-
-        return null;
     }
 
     protected function getAnons(array $anonses, $postId): ?string

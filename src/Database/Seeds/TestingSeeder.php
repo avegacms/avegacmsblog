@@ -118,7 +118,7 @@ class TestingSeeder extends Seeder
 
         for ($i = 0; $i < $countOfPosts; $i++) {
             CLI::showProgress($i + 1, $countOfPosts);
-            $title = $faker->realTextBetween(2,48);
+            $title = $faker->realTextBetween(2, 48);
 
             $category = $categories[random_int(0, count($categories) - 1)];
 
@@ -141,6 +141,7 @@ class TestingSeeder extends Seeder
                 d($MDM->errors());
                 CLI::newLine();
                 $i -= 0.5;
+
                 continue;
             }
 

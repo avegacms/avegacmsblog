@@ -11,9 +11,8 @@ use ReflectionException;
 
 class Post extends AvegaCmsFrontendController
 {
-    protected ?string $moduleKey = 'blog.post';
+    protected ?string $moduleKey    = 'blog.post';
     protected bool $useTemplateMeta = true;
-
     protected int $category_mid;
     protected int $post_mid;
     protected BlogPostsModel $BPM;
@@ -49,6 +48,6 @@ class Post extends AvegaCmsFrontendController
 
         $post = $this->BPM->getBlogPost($post->id, $this->post_mid, true);
 
-        return $this->render( ['post' => $post], 'post');
+        return $this->render(['post' => $post], 'post');
     }
 }
