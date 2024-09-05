@@ -25,9 +25,7 @@ class Category extends AvegaCmsAdminAPI
     {
         parent::__construct();
 
-        $this->MDM          = new MetaDataModel();
-
-        $this->MDM->findAll();
+        $this->MDM = new MetaDataModel();
 
         $this->BPM          = new BlogPostsModel();
         $this->meta_blog_id = (int) $this->MDM->getMetadataModule((int) CmsModule::meta('blog')['id'])->first()->id;
@@ -37,14 +35,7 @@ class Category extends AvegaCmsAdminAPI
     public function index(): ResponseInterface
     {
         return $this->cmsRespond(
-            $this->BPM->select(
-                ['metadata.id', 'metadata.url', 'metadata.slug', 'metadata.meta', 'COUNT(metadata.id) as num']
-            )
-                ->where(['metadata.module_id' => $this->category_mid])
-                ->join('metadata as MD', 'metadata.id = MD.parent')
-                ->groupBy('metadata.id')
-                ->filter(request()->getGet())
-                ->apiPagination()
+            $this->BPM->getCategories($this->category_mid)
         );
     }
 
@@ -61,8 +52,7 @@ class Category extends AvegaCmsAdminAPI
             $data = $this->getApiData();
 
             $data = $this->getValidated($data);
-
-            if (($id = $this->MDM->insert([
+            $data = [
                 'parent'          => $this->meta_blog_id,
                 'locale_id'       => 1,
                 'module_id'       => $this->category_mid,
@@ -76,7 +66,8 @@ class Category extends AvegaCmsAdminAPI
                 'meta_type'       => MetaDataTypes::Module->name,
                 'in_sitemap'      => true,
                 'created_by_id'   => $this->userData->userId,
-            ])) === false) {
+            ];
+            if (($id = $this->MDM->insert($data)) === false) {
                 return $this->cmsRespondFail($this->MDM->errors());
             }
 
@@ -84,6 +75,11 @@ class Category extends AvegaCmsAdminAPI
 
             return $this->cmsRespondCreated($id);
         } catch (Exception $e) {
+            log_message(
+                'error',
+                sprintf('[Blog : Category creating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
+            );
+
             return $this->cmsRespondFail($e->getMessage());
         }
     }
@@ -99,12 +95,6 @@ class Category extends AvegaCmsAdminAPI
 
             $data = $this->getValidated($data);
 
-            // Правильно уникальности составного ключа при обновлении
-            // Не подбирает себе данные с обновляемого поста
-            // И думает что поля не установлены, и валит ошибку
-            // Так что необходимо явно установить все составляющие ключа
-            // Это parent module_id item_id use_url_pattern slug
-            // + ID, чтобы не было ошибки уникальности
             $data['id']               = $id;
             $data['slug']             = mb_url_title(mb_strtolower($data['title']));
             $data['parent']           = $category->parent;
@@ -124,13 +114,18 @@ class Category extends AvegaCmsAdminAPI
 
             return $this->respondNoContent();
         } catch (Exception $e) {
+            log_message(
+                'error',
+                sprintf('[Blog : Category updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
+            );
+
             return $this->cmsRespondFail($e->getMessage());
         }
     }
 
     public function delete(int $id): ResponseInterface
     {
-        if ($this->MDM->where(['id' => $id, 'module_id' => $this->category_mid])->first() === null) {
+        if ($this->MDM->getMetadata($id, $this->category_mid) === null) {
             return $this->failNotFound();
         }
 
@@ -142,10 +137,6 @@ class Category extends AvegaCmsAdminAPI
         return $this->respondNoContent();
     }
 
-    /**
-     * @param array $data
-     * @return array
-     */
     protected function getValidated(array $data): array
     {
         $rules = [

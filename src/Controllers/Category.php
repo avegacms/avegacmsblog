@@ -31,7 +31,7 @@ class Category extends AvegaCmsFrontendController
         $filter           = $_GET;
         $filter['parent'] = $category->id;
 
-        return $this->render(['posts' => $BPM->getBlogPosts(
+        return $this->render(['posts' => $BPM->getPosts(
             (int) CmsModule::meta('blog.post')['id'],
             $filter,
             true

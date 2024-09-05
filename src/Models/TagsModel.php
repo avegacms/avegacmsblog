@@ -11,6 +11,7 @@ class TagsModel extends AvegaCmsModel
     protected $table         = 'tags';
     protected $returnType    = 'object';
     protected $allowedFields = [
+        'id',
         'name',
         'slug',
         'active',

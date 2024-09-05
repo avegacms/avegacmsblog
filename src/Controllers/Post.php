@@ -46,7 +46,7 @@ class Post extends AvegaCmsFrontendController
             return redirect()->to('/blog/post/' . $post->slug . '_' . $post->id, 301);
         }
 
-        $post = $this->BPM->getBlogPost($post->id, $this->post_mid, true);
+        $post = $this->BPM->getPost($post->id, $this->post_mid, true);
 
         return $this->render(['post' => $post], 'post');
     }

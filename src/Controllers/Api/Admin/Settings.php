@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace AvegaCmsBlog\Controllers\Api\Admin;
 
 use AvegaCms\Controllers\Api\Admin\AvegaCmsAdminAPI;
@@ -21,6 +23,11 @@ class Settings extends AvegaCmsAdminAPI
                 ),
             );
         } catch (Exception $e) {
+            log_message(
+                'error',
+                sprintf('[Blog : Post getting] : %s & %s', $e->getMessage(), $e->getTraceAsString())
+            );
+
             return $this->cmsRespondFail($e->getMessage());
         }
     }
@@ -75,6 +82,11 @@ class Settings extends AvegaCmsAdminAPI
 
             return $this->respondNoContent();
         } catch (Exception $e) {
+            log_message(
+                'error',
+                sprintf('[Blog : Settings updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
+            );
+
             return $this->cmsRespondFail($e->getMessage());
         }
     }

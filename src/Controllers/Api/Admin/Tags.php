@@ -22,7 +22,7 @@ class Tags extends AvegaCmsAdminAPI
     public function __construct()
     {
         parent::__construct();
-        $this->TM = new TagsModel();
+        $this->TM  = new TagsModel();
         $this->TLM = new TagsLinksModel();
     }
 
@@ -47,17 +47,24 @@ class Tags extends AvegaCmsAdminAPI
 
             $data = $this->getValidated($data);
 
-            if (($id = $this->TM->insert([
+            $data = [
                 'name'          => trim($data['name']),
                 'slug'          => mb_url_title(mb_strtolower($data['name'])),
                 'active'        => true,
                 'created_by_id' => $this->userData->userId,
-            ])) === false) {
+            ];
+
+            if (($id = $this->TM->insert($data)) === false) {
                 return $this->cmsRespondFail($this->TM->errors());
             }
 
             return $this->cmsRespondCreated($id);
         } catch (Exception $e) {
+            log_message(
+                'error',
+                sprintf('[Blog : Tags creating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
+            );
+
             return $this->cmsRespondFail($e->getMessage());
         }
     }
@@ -70,24 +77,24 @@ class Tags extends AvegaCmsAdminAPI
             }
 
             $data = $this->getApiData();
-
             $data = $this->getValidated($data);
 
-            // Необходимо явно передать ID
-            // Так как CI4 не подтягивает его сам
-            // В итоге, видит, что в ID = 6 такая же запись
-            // А сам он себя иденцифицирует, как ID = NULl
-            // И валит, что такая запись уже существует
-            $data['id']     = $id;
-            $data['active'] = (bool) $data['active'];
-            $data['slug']   = mb_url_title(mb_strtolower($data['name']));
+            $data['id']            = $id;
+            $data['active']        = (bool) $data['active'];
+            $data['slug']          = mb_url_title(mb_strtolower($data['name']));
+            $data['updated_by_id'] = $this->userData->userId;
 
-            if ($this->TM->update($id, $data) === false) {
+            if ($this->TM->save($data) === false) {
                 return $this->cmsRespondFail($this->TM->errors());
             }
 
             return $this->respondNoContent();
         } catch (Exception $e) {
+            log_message(
+                'error',
+                sprintf('[Blog : Tags updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
+            );
+
             return $this->cmsRespondFail($e->getMessage());
         }
     }
@@ -103,7 +110,7 @@ class Tags extends AvegaCmsAdminAPI
         return $this->respondNoContent();
     }
 
-    protected function getValidated(array $data) : array
+    protected function getValidated(array $data): array
     {
         $rules = [
             'name' => [

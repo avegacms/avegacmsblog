@@ -22,8 +22,8 @@ class TagsLinksModel extends AvegaCmsModel
     ];
     protected array $casts = [
         'tag_id'        => 'int',
-        'id'        => 'int',
-        'count'        => 'int',
+        'id'            => 'int',
+        'num'           => 'int',
         'active'        => 'bool',
         'meta_id'       => 'int',
         'created_by_id' => 'int',
@@ -33,16 +33,13 @@ class TagsLinksModel extends AvegaCmsModel
     ];
 
     // Dates
-    protected $useTimestamps = true;
-
+    protected $useTimestamps      = true;
     protected array $filterFields = [
-        'id'        => 'tags_links.tag_id',
+        'id' => 'tags_links.tag_id',
     ];
-
     protected array $filterCastsFields = [
         'id' => 'integer',
     ];
-
     protected array $searchFields = [
         'name',
     ];
@@ -89,10 +86,10 @@ class TagsLinksModel extends AvegaCmsModel
         return array_column($query, 'meta_id');
     }
 
-    public function getTags(array $filter) : array
+    public function getTags(array $filter): array
     {
-        return $this->select(['tags.id', 'tags.name', 'tags.slug', 'tags.active', 'tags.created_by_id', 'COUNT(tags_links.tag_id) as count'])
-            ->join('tags','tags_links.tag_id = tags.id')
+        return $this->select(['tags.id', 'tags.name', 'tags.slug', 'tags.active', 'tags.created_by_id', 'COUNT(tags_links.tag_id) as num'])
+            ->join('tags', 'tags_links.tag_id = tags.id')
             ->groupBy('tags.id')
             ->filter($filter)
             ->apiPagination();

@@ -30,6 +30,6 @@ class Blog extends AvegaCmsFrontendController
     public function index(): ResponseInterface
     {
         return $this->render(['posts' => model(BlogPostsModel::class)
-            ->getBlogPosts($this->post_mid, $_GET, true)], 'blog');
+            ->getPosts($this->post_mid, $_GET, true)], 'blog');
     }
 }

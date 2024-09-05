@@ -1,9 +1,10 @@
 <?php
+
 return [
-    'label'               => [
+    'label' => [
         'caption' => 'Блог',
     ],
-    'context'             => [
-        'description' => 'Блог'
+    'context' => [
+        'description' => 'Блог',
     ],
 ];

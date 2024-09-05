@@ -15,7 +15,6 @@ use AvegaCms\Utilities\Exceptions\UploaderException;
 use AvegaCmsBlog\Models\BlogPostsModel;
 use AvegaCmsBlog\Models\TagsLinksModel;
 use AvegaCmsBlog\Models\TagsModel;
-use CodeIgniter\HTTP\Exceptions\HTTPException;
 use CodeIgniter\HTTP\ResponseInterface;
 use Exception;
 use JsonException;
@@ -44,7 +43,7 @@ class Posts extends AvegaCmsAdminAPI
 
     public function index(): ResponseInterface
     {
-        $posts = $this->BPM->getBlogPosts($this->post_mid, $this->request->getGet() ?? []);
+        $posts = $this->BPM->getPosts($this->post_mid, $this->request->getGet() ?? []);
 
         return $this->cmsRespond($posts);
     }
@@ -71,20 +70,31 @@ class Posts extends AvegaCmsAdminAPI
 
             $data = $this->getValidated($data);
 
-            if (($id = $this->BPM->insert($this->getMetaArray($data))) === false) {
+            $create_array = $this->getMetaArray($data);
+
+            $exists = $this->BPM->where(
+                [
+                    'slug'      => $create_array['slug'],
+                    'module_id' => $this->post_mid,
+                ]
+            )->first() !== null;
+
+            if ($exists) {
+                return $this->cmsRespondFail('Данное имя уже занято');
+            }
+
+            if (($id = $this->BPM->insert($create_array)) === false) {
                 return $this->cmsRespondFail($this->BPM->errors());
             }
 
             $this->setContent($id, $data);
 
             return $this->cmsRespondCreated($id);
-        } catch (Exception|HTTPException $e) {
-            if (env('CI_ENVIRONMENT') === 'development') {
-                log_message(
-                    'error',
-                    sprintf('[Blog : Post Creation] : %s & %s', $e->getMessage(), $e->getTraceAsString())
-                );
-            }
+        } catch (Exception $e) {
+            log_message(
+                'error',
+                sprintf('[Blog : Post updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
+            );
 
             return $this->cmsRespondFail($e->getMessage());
         }
@@ -92,7 +102,7 @@ class Posts extends AvegaCmsAdminAPI
 
     public function edit(int $id): ResponseInterface
     {
-        if (($post = $this->BPM->getBlogPost($id, $this->post_mid)) === null) {
+        if (($post = $this->BPM->getPost($id, $this->post_mid)) === null) {
             return $this->failNotFound();
         }
 
@@ -102,16 +112,28 @@ class Posts extends AvegaCmsAdminAPI
     public function update(int $id): ResponseInterface
     {
         try {
-            if (($post = $this->BPM->getBlogPost($id, $this->post_mid)) === null) {
+            if (($post = $this->BPM->getPost($id, $this->post_mid)) === null) {
                 return $this->failNotFound();
             }
 
             $data = $this->getValidated($this->getApiData());
 
+            $update_array = $this->getMetaArray($data);
+
+            $exists = $this->BPM->where(
+                [
+                    'slug'      => $update_array['slug'],
+                    'module_id' => $this->post_mid,
+                    'id !='     => $id,
+                ]
+            )->first() !== null;
+
+            if ($exists) {
+                return $this->cmsRespondFail('Данное имя уже занято');
+            }
+
             $this->CM->delete($post->id);
             $this->TLM->where(['meta_id' => $post->id])->delete();
-
-            $update_array = $this->getMetaArray($data);
 
             $update_array['meta']             = $post->meta;
             $update_array['meta']['title']    = $data['title'];
@@ -123,12 +145,10 @@ class Posts extends AvegaCmsAdminAPI
 
             $this->setContent($id, $data);
         } catch (Exception $e) {
-            if (env('CI_ENVIRONMENT') === 'development') {
-                log_message(
-                    'error',
-                    sprintf('[Blog : Post updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
-                );
-            }
+            log_message(
+                'error',
+                sprintf('[Blog : Post updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
+            );
 
             return $this->cmsRespondFail($e->getMessage());
         }
