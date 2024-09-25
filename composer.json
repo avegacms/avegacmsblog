@@ -1,21 +1,28 @@
 {
-    "name": "avegacms/avegacmsblog",
-    "description": "Blog Module of Avega-Soft",
-    "type": "library",
-    "require": {
-        "php": "^8.2",
-        "avegacms/avegacms": "dev-master",
-        "codeigniter4/framework": "^4.0"
-    },
-    "require-dev": {
-        "fakerphp/faker": "^1.9",
-        "mikey179/vfsstream": "^1.6",
-        "phpunit/phpunit": "^10.5.16"
-    },
-    "minimum-stability": "dev",
-    "autoload": {
-        "psr-4": {
-          "AvegaCmsBlog\\": "src/"
-        }
+  "name": "avegacms/avegacmsblog",
+  "minimum-stability": "dev",
+  "description": "Blog Module of Avega-Soft",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "AvegaTeam",
+      "email": "web@avega-soft.ru"
     }
+  ],
+  "require": {
+    "php": "^8.2",
+    "avegacms/avegacms": "dev-master",
+    "codeigniter4/framework": "^4.0"
+  },
+  "require-dev": {
+    "fakerphp/faker": "^1.9",
+    "mikey179/vfsstream": "^1.6",
+    "phpunit/phpunit": "^10.5.16"
+  },
+  "autoload": {
+    "psr-4": {
+      "AvegaCmsBlog\\": "src/"
+    }
+  },
+  "prefer-stable": true
 }
