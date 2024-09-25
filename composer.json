@@ -1,5 +1,5 @@
 {
-  "name": "avegasoft/avegacmsblog",
+  "name": "avegacms/avegacmsblog",
   "description": "Blog Module of Avega-Soft",
   "type": "library",
   "require": {
@@ -21,5 +21,5 @@
     "exclude-from-classmap": [
       "**/Database/Migrations/**"
     ]
-  },
+  }
 }
