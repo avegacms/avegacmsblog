@@ -1,14 +1,7 @@
 {
     "name": "avegasoft/avegacmsblog",
-    "description": "CodeIgniter4 starter app",
-    "license": "MIT",
-    "type": "project",
-    "homepage": "https://codeigniter.com",
-    "support": {
-        "forum": "https://forum.codeigniter.com/",
-        "source": "https://github.com/codeigniter4/CodeIgniter4",
-        "slack": "https://codeigniterchat.slack.com"
-    },
+    "description": "Blog Module of Avega-Soft",
+    "type": "library",
     "require": {
         "php": "^8.2",
         "avegacms/avegacms": "dev-master",
@@ -29,17 +22,4 @@
             "**/Database/Migrations/**"
         ]
     },
-    "autoload-dev": {
-        "psr-4": {
-            "Tests\\Support\\": "tests/_support"
-        }
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true
-    },
-    "scripts": {
-        "test": "phpunit"
-    }
 }
