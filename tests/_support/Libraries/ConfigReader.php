@@ -9,7 +9,7 @@ namespace Tests\Support\Libraries;
  * loading external values. Used to read actual local values from
  * a config file.
  */
-class ConfigReader extends \Config\App
+class ConfigReader extends App
 {
     public function __construct()
     {
