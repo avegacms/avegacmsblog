@@ -95,7 +95,7 @@ class Tags extends AvegaCmsAdminAPI
             $data = $this->getValidated($data);
 
             $data['id']            = $id;
-            $data['active']        = !is_bool($data['active']) || $data['active'];
+            $data['active']        = (bool) $data['active'];
             $data['slug']          = mb_url_title(mb_strtolower($data['name']));
             $data['updated_by_id'] = $this->userData->userId;
 
@@ -131,11 +131,7 @@ class Tags extends AvegaCmsAdminAPI
             'name' => [
                 'rules' => 'required|min_length[3]|max_length[128]',
                 'label' => 'Название',
-            ],
-            'active' => [
-                'rules' => 'required',
-                'label' => 'Активность',
-            ],
+            ]
         ];
 
         if ($this->validateData($data, $rules) === false) {
