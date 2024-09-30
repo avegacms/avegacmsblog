@@ -39,6 +39,13 @@ class Category extends AvegaCmsAdminAPI
         );
     }
 
+    public function edit(int $id): ResponseInterface
+    {
+        return $this->cmsRespond(
+            $this->BPM->where(['module_id' => $this->category_mid])->find($id)
+        );
+    }
+
     public function new(): ResponseInterface
     {
         return $this->cmsRespond([

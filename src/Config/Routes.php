@@ -19,6 +19,7 @@ $routes->group('api', static function (RouteCollection $routes) {
         $routes->group('blog', static function (RouteCollection $routes) {
             $routes->group('category', static function (RouteCollection $routes) {
                 $routes->get('/', [Category::class, 'index']);
+                $routes->get('(:num)', [Category::class, 'edit']);
                 $routes->post('/', [Category::class, 'create']);
                 $routes->put('(:num)', [[Category::class, 'update'], '$1']);
                 $routes->delete('(:num)', [[Category::class, 'delete'], '$1']);
