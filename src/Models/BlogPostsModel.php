@@ -118,7 +118,12 @@ class BlogPostsModel extends MetaDataModel
         if (isset($this->hide) === false) {
             return $data;
         }
-        var_dump($data);exit();
+
+        if (empty($data['data']))
+        {
+            return $data;
+        }
+
         if ($data['singleton'] === false) {
             $anonses = $this->CM->select(['id', 'anons'])
                 ->whereIn('id', array_column($data['data'], 'id'))->findAll();
