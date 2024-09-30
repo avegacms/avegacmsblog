@@ -33,7 +33,8 @@ class Tags extends AvegaCmsAdminAPI
 
     public function edit(int $id): ResponseInterface
     {
-        return $this->cmsRespond($this->TM
+        return $this->cmsRespond( (array)
+            $this->TM
             ->select([
                 'id',
                 'name',
@@ -41,7 +42,8 @@ class Tags extends AvegaCmsAdminAPI
                 'active',
                 'created_by_id'
             ])
-            ->find($id));
+            ->find($id)
+        );
     }
 
     public function new(): ResponseInterface
