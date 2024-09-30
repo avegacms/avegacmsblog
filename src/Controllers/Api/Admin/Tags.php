@@ -131,6 +131,10 @@ class Tags extends AvegaCmsAdminAPI
             'name' => [
                 'rules' => 'required|min_length[3]|max_length[128]',
                 'label' => 'Название',
+            ],
+            'active' => [
+                'rules' => 'permit_empty',
+                'label' => 'Активность'
             ]
         ];
 
