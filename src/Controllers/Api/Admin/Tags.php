@@ -95,7 +95,7 @@ class Tags extends AvegaCmsAdminAPI
             $data = $this->getValidated($data);
 
             $data['id']            = $id;
-            $data['active']        = (bool) $data['active'];
+            $data['active']        = !is_bool($data['active']) || $data['active'];
             $data['slug']          = mb_url_title(mb_strtolower($data['name']));
             $data['updated_by_id'] = $this->userData->userId;
 
