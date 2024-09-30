@@ -133,7 +133,7 @@ class Tags extends AvegaCmsAdminAPI
                 'label' => 'Название',
             ],
             'active' => [
-                'rules' => 'required|in_list[0,1]',
+                'rules' => 'required',
                 'label' => 'Активность',
             ],
         ];
