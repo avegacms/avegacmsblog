@@ -42,7 +42,13 @@ class Category extends AvegaCmsAdminAPI
     public function edit(int $id): ResponseInterface
     {
         return $this->cmsRespond( (array)
-            $this->BPM->where(['module_id' => $this->category_mid])->find($id)
+            $this->BPM->select([
+                'id',
+                'title',
+                'url',
+                'slug',
+                'meta',
+            ])->where(['module_id' => $this->category_mid])->find($id)
         );
     }
 
