@@ -33,7 +33,15 @@ class Tags extends AvegaCmsAdminAPI
 
     public function edit(int $id): ResponseInterface
     {
-        return $this->cmsRespond($this->TLM->select(['id', 'name', 'slug', 'active', 'created_by_id', 'COUNT(tags_links.tag_id) as num']));
+        return $this->cmsRespond($this->TM
+            ->select([
+                'id',
+                'name',
+                'slug',
+                'active',
+                'created_by_id'
+            ])
+            ->find($id));
     }
 
     public function new(): ResponseInterface
