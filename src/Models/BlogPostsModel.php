@@ -51,11 +51,11 @@ class BlogPostsModel extends MetaDataModel
                 'metadata.url',
                 'metadata.slug',
                 'metadata.meta',
-                'COUNT(metadata.id) as num',
+                'COUNT(MD.id) as num',
             ]
         )
             ->where(['metadata.module_id' => $moduleId])
-            ->join('metadata as MD', 'metadata.id = MD.parent')
+            ->join('metadata as MD', 'metadata.id = MD.parent', 'left')
             ->groupBy('metadata.id')
             ->filter(request()->getGet())
             ->apiPagination();
