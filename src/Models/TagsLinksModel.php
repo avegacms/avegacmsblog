@@ -89,7 +89,7 @@ class TagsLinksModel extends AvegaCmsModel
     public function getTags(array $filter): array
     {
         return $this->select(['tags.id', 'tags.name', 'tags.slug', 'tags.active', 'tags.created_by_id', 'COUNT(tags_links.tag_id) as num'])
-            ->join('tags', 'tags_links.tag_id = tags.id')
+            ->join('tags', 'tags_links.tag_id = tags.id', 'right')
             ->groupBy('tags.id')
             ->filter($filter)
             ->apiPagination();

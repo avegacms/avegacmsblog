@@ -27,6 +27,7 @@ $routes->group('api', static function (RouteCollection $routes) {
 
             $routes->group('tags', static function (RouteCollection $routes) {
                 $routes->get('/', [Tags::class, 'index']);
+                $routes->get('(:num)', [Tags::class, 'edit']);
                 $routes->put('(:num)', [[Tags::class, 'update'], '$1']);
                 $routes->post('/', [Tags::class, 'create']);
                 $routes->delete('(:num)', [[Tags::class, 'delete'], '$1']);
