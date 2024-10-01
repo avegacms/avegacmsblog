@@ -12,6 +12,7 @@ use AvegaCms\Utilities\Cms;
 use AvegaCms\Utilities\CmsFileManager;
 use AvegaCms\Utilities\CmsModule;
 use AvegaCms\Utilities\Exceptions\UploaderException;
+use AvegaCmsBlog\Exception\ValidationException;
 use AvegaCmsBlog\Models\BlogPostsModel;
 use AvegaCmsBlog\Models\TagsLinksModel;
 use AvegaCmsBlog\Models\TagsModel;
@@ -90,11 +91,15 @@ class Posts extends AvegaCmsAdminAPI
             $this->setContent($id, $data);
 
             return $this->cmsRespondCreated($id);
-        } catch (Exception $e) {
+        } catch (Exception|ValidationException $e) {
             log_message(
                 'error',
                 sprintf('[Blog : Post updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
             );
+
+            if ($e instanceof ValidationException) {
+                return $this->cmsRespondFail($e->getErrors());
+            }
 
             return $this->cmsRespondFail($e->getMessage());
         }
@@ -262,6 +267,7 @@ class Posts extends AvegaCmsAdminAPI
 
     /**
      * @throws ReflectionException
+     * @throws ValidationException
      */
     protected function setContent(int $id, array $data): void
     {
@@ -271,7 +277,7 @@ class Posts extends AvegaCmsAdminAPI
             'content' => $data['content'],
             'extra'   => $data['extra'] ?? null,
         ]) === false) {
-            throw new RuntimeException(implode(' и ', $this->CM->errors()));
+            throw new ValidationException($this->CM->errors());
         }
 
         if (isset($data['tags'])) {

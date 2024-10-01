@@ -12,7 +12,8 @@
   "require": {
     "php": "^8.2",
     "avegacms/avegacms": "dev-master",
-    "codeigniter4/framework": "^4.0"
+    "codeigniter4/framework": "^4.0",
+    "codeigniter4/translations": "^4.5"
   },
   "require-dev": {
     "fakerphp/faker": "^1.9",

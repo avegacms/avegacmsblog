@@ -35,6 +35,7 @@ $routes->group('api', static function (RouteCollection $routes) {
 
             $routes->group('post', static function (RouteCollection $routes) {
                 $routes->get('/', [Posts::class, 'index']);
+                $routes->get('new', [Posts::class, 'new']);
                 $routes->get('(:num)', [[Posts::class, 'edit'], '$1']);
                 $routes->put('(:num)', [[Posts::class, 'update'], '$1']);
                 $routes->put('upload/(:num)', [[Posts::class, 'upload'], '$1']);
