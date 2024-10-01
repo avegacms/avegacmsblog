@@ -148,17 +148,17 @@ class Posts extends AvegaCmsAdminAPI
 
             if (isset($update_array['meta']))
             {
-                $update_array['meta']         = json_decode($data['meta'], true, 512, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+                $update_array['meta']         = $data['meta'];
             }
 
             if (isset($update_array['meta_sitemap']))
             {
-                $update_array['meta_sitemap'] = json_decode($data['meta_sitemap'], true, 512, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+                $update_array['meta_sitemap'] = $data['meta_sitemap'];
             }
 
             if (isset($update_array['in_sitemap']))
             {
-                $update_array['in_sitemap'] = (bool) $data['in_sitemap'];
+                $update_array['in_sitemap']   = (bool) $data['in_sitemap'];
             }
 
             if ($this->BPM->update($id, ['id' => $id, ...$update_array]) === false) {
