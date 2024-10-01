@@ -53,7 +53,6 @@ class Posts extends AvegaCmsAdminAPI
     {
         return $this->cmsRespond([], [
             'categories' => $this->BPM->getCategoriesForDropdown($this->category_mid),
-            'tags' => $this->TM->getTagsForDropdown()
         ]);
     }
 
@@ -317,11 +316,11 @@ class Posts extends AvegaCmsAdminAPI
                 'label' => 'Заголовок',
             ],
             'anons' => [
-                'rules' => 'required|string|max_length[255]',
+                'rules' => 'permit_empty|string|max_length[255]',
                 'label' => 'Анонс',
             ],
             'category' => [
-                'rules' => 'required|is_natural_no_zero',
+                'rules' => 'permit_empty|is_natural_no_zero',
                 'label' => 'Категория',
             ],
             'tags' => [

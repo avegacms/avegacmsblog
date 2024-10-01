@@ -28,7 +28,6 @@ class TagsModel extends AvegaCmsModel
         'updated_by_id' => 'int',
         'created_at'    => 'cmsdatetime',
         'updated_at'    => 'cmsdatetime',
-        'value'         => 'int'
     ];
 
     // Dates
@@ -48,11 +47,6 @@ class TagsModel extends AvegaCmsModel
     public function getTags(): array
     {
         return $this->select(['id', 'name'])->findAll();
-    }
-
-    public function getTagsForDropdown(): array
-    {
-        return $this->select(['id AS value', 'name AS label'])->findAll();
     }
 
     public function __construct()
