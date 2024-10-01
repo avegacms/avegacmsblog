@@ -123,6 +123,13 @@ class Posts extends AvegaCmsAdminAPI
                 return $this->failNotFound();
             }
 
+            $data = $this->getApiData();
+
+            if (isset($data['parent']))
+            {
+                $data['category'] = $data['parent'];
+            }
+
             $data = $this->getValidated($this->getApiData());
 
             $update_array = $this->getMetaArray($data);
