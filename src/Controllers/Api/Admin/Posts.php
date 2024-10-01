@@ -130,7 +130,7 @@ class Posts extends AvegaCmsAdminAPI
                 $data['category'] = $data['parent'];
             }
 
-            $data = $this->getValidated($this->getApiData());
+            $data = $this->getValidated($data);
 
             $update_array = $this->getMetaArray($data);
 
