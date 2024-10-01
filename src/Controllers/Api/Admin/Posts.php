@@ -82,7 +82,10 @@ class Posts extends AvegaCmsAdminAPI
                 return $this->cmsRespondFail($this->BPM->errors());
             }
 
-            $this->setContent($id, $data);
+            if (isset($data['content'], $data['anons']))
+            {
+                $this->setContent($id, $data);
+            }
 
             return $this->cmsRespondCreated($id);
         } catch (Exception|ValidationException $e) {
