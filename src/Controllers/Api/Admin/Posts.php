@@ -146,6 +146,21 @@ class Posts extends AvegaCmsAdminAPI
             $update_array['meta']['title']    = $data['title'];
             $update_array['meta']['og:title'] = $data['title'];
 
+            if (isset($update_array['meta']))
+            {
+                $update_array['meta']         = json_decode($data['meta'], true, 512, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+            }
+
+            if (isset($update_array['meta_sitemap']))
+            {
+                $update_array['meta_sitemap'] = json_decode($data['meta_sitemap'], true, 512, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+            }
+
+            if (isset($update_array['in_sitemap']))
+            {
+                $update_array['in_sitemap'] = (bool) $data['in_sitemap'];
+            }
+
             if ($this->BPM->update($id, ['id' => $id, ...$update_array]) === false) {
                 return $this->cmsRespondFail($this->BPM->errors());
             }
@@ -369,6 +384,18 @@ class Posts extends AvegaCmsAdminAPI
                 'rules' => 'permit_empty|is_natural_no_zero|is_not_unique[files.id]',
                 'label' => 'Номер превью',
             ],
+            'in_sitemap' => [
+                'rules' => 'permit_empty',
+                'label' => 'Присутствие в sitemap'
+            ],
+            'meta' => [
+                'rules' => 'permit_empty|string',
+                'label' => 'OpenGraph мета данные'
+            ],
+            'meta_sitemap' => [
+                'rules' => 'permit_empty|string',
+                'label' => 'SiteMap мета данные'
+            ]
         ];
     }
 }
