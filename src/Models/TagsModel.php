@@ -28,6 +28,7 @@ class TagsModel extends AvegaCmsModel
         'updated_by_id' => 'int',
         'created_at'    => 'cmsdatetime',
         'updated_at'    => 'cmsdatetime',
+        'value'         => 'int'
     ];
 
     // Dates
@@ -42,7 +43,6 @@ class TagsModel extends AvegaCmsModel
         'active'        => 'required|in_list[0,1]',
         'created_by_id' => 'permit_empty|is_natural_no_zero',
         'updated_by_id' => 'permit_empty|is_natural_no_zero',
-        'value'         => 'int'
     ];
 
     public function getTags(): array

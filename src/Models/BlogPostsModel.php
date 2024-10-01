@@ -22,11 +22,6 @@ class BlogPostsModel extends MetaDataModel
         $this->TLM = new TagsLinksModel();
         $this->TM  = new TagsModel();
         $this->CM  = new ContentModel();
-
-        $this->casts = [
-            ...$this->casts,
-            'value' => 'int'
-        ];
     }
 
     protected function initialize(): void
@@ -44,6 +39,11 @@ class BlogPostsModel extends MetaDataModel
 
         $this->searchFields = [
             'metadata.title',
+        ];
+
+        $this->casts = [
+            ...$this->casts,
+            'value' => 'int'
         ];
     }
 
