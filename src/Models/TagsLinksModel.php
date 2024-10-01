@@ -59,6 +59,11 @@ class TagsLinksModel extends AvegaCmsModel
 
     public function getTagsOfPosts(array $posts, bool $hide): array
     {
+        if (!empty($posts) && empty(array_column($posts, 'id')) )
+        {
+            return $posts;
+        }
+
         return ($hide)
             ? $this->select(['tags.name as label', 'tags.id as value', 'tags_links.meta_id'])
                 ->whereIn(

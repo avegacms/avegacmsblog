@@ -13,7 +13,7 @@ class BlogPostsModel extends MetaDataModel
     protected TagsLinksModel $TLM;
     protected TagsModel $TM;
     protected ContentModel $CM;
-    protected bool $hide;
+    protected ?bool $hide = null;
 
     public function __construct()
     {
@@ -112,12 +112,17 @@ class BlogPostsModel extends MetaDataModel
 
     protected function tagsSubstitution(array $data): array
     {
-        if (isset($this->hide) === false || $this->hide === false || empty($data['data'])) {
+        if (isset($this->hide) === false || empty($data['data'])) {
             return $data;
         }
 
         if ($data['singleton'] === false) {
             $tags = $this->TLM->getTagsOfPosts($data['data'], $this->hide);
+
+            if ($tags === $data['data'])
+            {
+                return $data;
+            }
 
             foreach ($data['data'] as &$item) {
                 $item = $this->tagsSubstitute($item, $tags);
@@ -126,7 +131,6 @@ class BlogPostsModel extends MetaDataModel
             $tags         = $this->TLM->getTagsOfPosts([$data['data']], $this->hide);
             $data['data'] = $this->tagsSubstitute($data['data'], $tags);
         }
-
         return $data;
     }
 
@@ -203,7 +207,6 @@ class BlogPostsModel extends MetaDataModel
     protected function tagsSubstitute(object $post, array $tags): object
     {
         $post->tags = [];
-
         foreach ($tags as $tag) {
             if ($tag->meta_id === $post->id) {
                 $post->tags[] = [
