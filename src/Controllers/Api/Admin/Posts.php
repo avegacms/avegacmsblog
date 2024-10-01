@@ -68,11 +68,11 @@ class Posts extends AvegaCmsAdminAPI
             $create_array = $this->getMetaArray($data);
 
             $exists = $this->BPM->where(
-                [
-                    'slug'      => $create_array['slug'],
-                    'module_id' => $this->post_mid,
-                ]
-            )->first() !== null;
+                    [
+                        'slug'      => $create_array['slug'],
+                        'module_id' => $this->post_mid,
+                    ]
+                )->first() !== null;
 
             if ($exists) {
                 return $this->cmsRespondFail('Данное имя уже занято');
@@ -82,10 +82,7 @@ class Posts extends AvegaCmsAdminAPI
                 return $this->cmsRespondFail($this->BPM->errors());
             }
 
-            if (isset($data['content'], $data['anons']))
-            {
-                $this->setContent($id, $data);
-            }
+            $this->setContent($id, $data);
 
             $this->setTags($id, $data);
 
@@ -135,12 +132,12 @@ class Posts extends AvegaCmsAdminAPI
             $update_array = $this->getMetaArray($data);
 
             $exists = $this->BPM->where(
-                [
-                    'slug'      => $update_array['slug'],
-                    'module_id' => $this->post_mid,
-                    'id !='     => $id,
-                ]
-            )->first() !== null;
+                    [
+                        'slug'      => $update_array['slug'],
+                        'module_id' => $this->post_mid,
+                        'id !='     => $id,
+                    ]
+                )->first() !== null;
 
             if ($exists) {
                 return $this->cmsRespondFail('Данное имя уже занято');
@@ -153,12 +150,12 @@ class Posts extends AvegaCmsAdminAPI
             $update_array['meta']['title']    = $data['title'];
             $update_array['meta']['og:title'] = $data['title'];
 
-            if (isset($update_array['meta']))
+            if (isset($data['meta']))
             {
                 $update_array['meta']         = $data['meta'];
             }
 
-            if (isset($update_array['meta_sitemap']))
+            if (isset($data['meta_sitemap']))
             {
                 $update_array['meta_sitemap'] = $data['meta_sitemap'];
             }
@@ -167,15 +164,11 @@ class Posts extends AvegaCmsAdminAPI
             {
                 $update_array['in_sitemap']   = (bool) $data['in_sitemap'];
             }
-
             if ($this->BPM->update($id, ['id' => $id, ...$update_array]) === false) {
                 return $this->cmsRespondFail($this->BPM->errors());
             }
 
-            if (isset($data['content'], $data['anons']))
-            {
-                $this->setContent($id, $data);
-            }
+            $this->setContent($id, $data);
 
             $this->setTags($id, $data);
         } catch (Exception|ValidationException $e) {
@@ -197,8 +190,8 @@ class Posts extends AvegaCmsAdminAPI
     public function delete(int $id): ResponseInterface
     {
         if ($this->BPM->where([
-            'module_id' => $this->post_mid,
-        ])->find($id) === null) {
+                'module_id' => $this->post_mid,
+            ])->find($id) === null) {
             return $this->failNotFound();
         }
         $this->BPM->delete($id);
@@ -210,8 +203,8 @@ class Posts extends AvegaCmsAdminAPI
     public function upload(int $id): ResponseInterface
     {
         if ($this->BPM->where([
-            'module_id' => $this->post_mid,
-        ])->find($id) === null) {
+                'module_id' => $this->post_mid,
+            ])->find($id) === null) {
             return $this->failNotFound();
         }
 
@@ -309,8 +302,8 @@ class Posts extends AvegaCmsAdminAPI
     {
         if ($this->CM->insert([
                 'id' => $id,
-                'anons' => $data['anons'],
-                'content' => $data['content'],
+                'anons' => $data['anons'] ?? null,
+                'content' => $data['content'] ?? null,
                 'extra' => $data['extra'] ?? null,
             ]) === false) {
             throw new ValidationException($this->CM->errors());
