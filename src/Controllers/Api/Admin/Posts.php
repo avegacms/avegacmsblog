@@ -149,11 +149,15 @@ class Posts extends AvegaCmsAdminAPI
             }
 
             $this->setContent($id, $data);
-        } catch (Exception $e) {
+        } catch (Exception|ValidationException $e) {
             log_message(
                 'error',
                 sprintf('[Blog : Post updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
             );
+
+            if ($e instanceof ValidationException) {
+                return $this->cmsRespondFail($e->getErrors());
+            }
 
             return $this->cmsRespondFail($e->getMessage());
         }
@@ -217,12 +221,15 @@ class Posts extends AvegaCmsAdminAPI
         }
     }
 
+    /**
+     * @throws ValidationException
+     */
     protected function getValidated(array $data): array
     {
         $rules = $this->rules();
 
         if ($this->validateData($data, $rules) === false) {
-            throw new RuntimeException(implode(' и ', $this->validator->getErrors()));
+            throw new ValidationException($this->validator->getErrors());
         }
 
         if ($this->BPM->where(['id' => $data['category'], 'module_id' => $this->category_mid])->first() === null) {
@@ -302,7 +309,7 @@ class Posts extends AvegaCmsAdminAPI
             }
 
             if ($this->TLM->insertbatch($batch) !== count($batch)) {
-                throw new RuntimeException(implode(' и ', $this->TLM->errors()));
+                throw new ValidationException($this->TLM->errors());
             }
         }
     }
