@@ -30,7 +30,6 @@ class BlogPostsModel extends MetaDataModel
         $this->afterFind    = [
             ...[
                 'tagsSubstitution',
-                'parentSubstitution',
                 'urlSubstitution',
                 'anonsSubstitution',
             ],
@@ -170,23 +169,6 @@ class BlogPostsModel extends MetaDataModel
         return $post;
     }
 
-    protected function parentSubstitution(array $data): array
-    {
-        if (isset($this->hide) === false || empty($data['data'])) {
-            return $data;
-        }
-
-        if ($data['singleton'] === false) {
-            foreach ($data['data'] as &$item) {
-                $item = $this->parentSubstitute($item);
-            }
-        } else {
-            $data['data'] = $this->parentSubstitute($data['data']);
-        }
-
-        return $data;
-    }
-
     protected function urlSubstitution(array $data): array
     {
         if (empty($data['data'])) {
@@ -232,35 +214,6 @@ class BlogPostsModel extends MetaDataModel
         }
 
         $post->meta['og:url'] = preg_replace(['/{slug}/', '/{id}/'], [$post->slug, $post->id], $post->url);
-
-        return $post;
-    }
-
-    protected function parentSubstitute(object $post): object
-    {
-        $categories = cache()->remember(
-            'blog_categories',
-            DAY,
-            static fn () => (new MetaDataModel())->select(['id', 'title'])->where(['module_id' => CmsModule::meta('blog.category')['id']])->findAll()
-        );
-
-        $parent = null;
-
-        foreach ($categories as $category) {
-            if ($category->id === $post->parent) {
-                $parent = $category;
-                break;
-            }
-        }
-
-        if ($parent === null) {
-            $post->parent = null;
-        } else {
-            $post->parent = [
-                'value' => $parent->id,
-                'label' => $parent->title,
-            ];
-        }
 
         return $post;
     }
