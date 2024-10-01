@@ -46,10 +46,7 @@ class Posts extends AvegaCmsAdminAPI
     {
         $posts = $this->BPM->getPosts($this->post_mid, $this->request->getGet() ?? []);
 
-        return $this->cmsRespond($posts,[
-            'categories'    => $this->BPM->getCategoriesForDropdown($this->category_mid),
-            'tags'          => $this->TM->getTagsForDropdown()
-        ]);
+        return $this->cmsRespond($posts);
     }
 
     public function new(): ResponseInterface
@@ -113,7 +110,10 @@ class Posts extends AvegaCmsAdminAPI
             return $this->failNotFound();
         }
 
-        return $this->cmsRespond((array) $post);
+        return $this->cmsRespond((array) $post,[
+            'categories'    => $this->BPM->getCategoriesForDropdown($this->category_mid),
+            'tags'          => $this->TM->getTagsForDropdown()
+        ]);
     }
 
     public function update(int $id): ResponseInterface
