@@ -46,7 +46,10 @@ class Posts extends AvegaCmsAdminAPI
     {
         $posts = $this->BPM->getPosts($this->post_mid, $this->request->getGet() ?? []);
 
-        return $this->cmsRespond($posts);
+        return $this->cmsRespond($posts,[
+            $this->BPM->getCategoriesForDropdown($this->category_mid),
+            $this->TM->getTagsForDropdown()
+        ]);
     }
 
     public function new(): ResponseInterface
