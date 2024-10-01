@@ -305,6 +305,8 @@ class Posts extends AvegaCmsAdminAPI
 
             foreach ($data['tags'] as $tag) {
                 if (isset($tags[$tag]) === false) {
+                    $this->BPM->delete($id);
+                    $this->CM->delete($id);
                     throw new RuntimeException('Тег ' . $tag . ' не существует');
                 }
                 $batch[] = [
