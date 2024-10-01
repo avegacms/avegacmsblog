@@ -191,10 +191,7 @@ class BlogPostsModel extends MetaDataModel
         $post->tags = [];
         foreach ($tags as $tag) {
             if ($tag->meta_id === $post->id) {
-                $post->tags[] = [
-                    'label' => $tag->label,
-                    'value' => (int) $tag->value,
-                ];
+                $post->tags[] = (int) $tag->value;
             }
         }
 
