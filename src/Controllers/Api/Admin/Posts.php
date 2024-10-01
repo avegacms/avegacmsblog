@@ -389,11 +389,11 @@ class Posts extends AvegaCmsAdminAPI
                 'label' => 'Присутствие в sitemap'
             ],
             'meta' => [
-                'rules' => 'permit_empty|string',
+                'rules' => 'permit_empty',
                 'label' => 'OpenGraph мета данные'
             ],
             'meta_sitemap' => [
-                'rules' => 'permit_empty|string',
+                'rules' => 'permit_empty',
                 'label' => 'SiteMap мета данные'
             ]
         ];
