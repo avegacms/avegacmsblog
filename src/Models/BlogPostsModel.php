@@ -112,7 +112,7 @@ class BlogPostsModel extends MetaDataModel
 
     protected function tagsSubstitution(array $data): array
     {
-        if (isset($this->hide) === false || empty($data['data'])) {
+        if (isset($this->hide) === false || $this->hide === false || empty($data['data'])) {
             return $data;
         }
 
@@ -132,7 +132,7 @@ class BlogPostsModel extends MetaDataModel
 
     protected function anonsSubstitution(array $data): array
     {
-        if (isset($this->hide) === false) {
+        if (isset($this->hide) === false || $this->hide === false) {
             return $data;
         }
 
@@ -168,7 +168,7 @@ class BlogPostsModel extends MetaDataModel
 
     protected function parentSubstitution(array $data): array
     {
-        if (isset($this->hide) === false || empty($data['data'])) {
+        if (isset($this->hide) === false || $this->hide === false || empty($data['data'])) {
             return $data;
         }
 
