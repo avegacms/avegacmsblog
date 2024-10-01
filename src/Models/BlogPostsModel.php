@@ -22,6 +22,11 @@ class BlogPostsModel extends MetaDataModel
         $this->TLM = new TagsLinksModel();
         $this->TM  = new TagsModel();
         $this->CM  = new ContentModel();
+
+        $this->casts = [
+            ...$this->casts,
+            'value' => 'int'
+        ];
     }
 
     protected function initialize(): void

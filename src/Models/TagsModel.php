@@ -42,6 +42,7 @@ class TagsModel extends AvegaCmsModel
         'active'        => 'required|in_list[0,1]',
         'created_by_id' => 'permit_empty|is_natural_no_zero',
         'updated_by_id' => 'permit_empty|is_natural_no_zero',
+        'value'         => 'int'
     ];
 
     public function getTags(): array
