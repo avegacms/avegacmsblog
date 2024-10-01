@@ -320,7 +320,7 @@ class Posts extends AvegaCmsAdminAPI
                 'label' => 'Анонс',
             ],
             'category' => [
-                'rules' => 'permit_empty|is_natural_no_zero',
+                'rules' => 'required|is_natural_no_zero',
                 'label' => 'Категория',
             ],
             'tags' => [
@@ -332,7 +332,7 @@ class Posts extends AvegaCmsAdminAPI
                 'label' => 'Теги',
             ],
             'content' => [
-                'rules' => 'required|string',
+                'rules' => 'permit_empty|string',
                 'label' => 'Контент',
             ],
             'extra' => [
