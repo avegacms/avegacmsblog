@@ -172,7 +172,7 @@ class BlogPostsModel extends MetaDataModel
 
     protected function parentSubstitution(array $data): array
     {
-        if (isset($this->hide) === false || $this->hide === false || empty($data['data'])) {
+        if (isset($this->hide) === false || empty($data['data'])) {
             return $data;
         }
 
