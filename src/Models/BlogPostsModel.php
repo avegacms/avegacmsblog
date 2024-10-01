@@ -61,6 +61,18 @@ class BlogPostsModel extends MetaDataModel
             ->apiPagination();
     }
 
+    public function getCategoriesForDropdown(int $moduleId): array
+    {
+        return $this->select(
+            [
+                'id AS value',
+                'title AS label'
+            ]
+        )
+            ->where(['metadata.module_id' => $moduleId])
+            ->findAll();
+    }
+
     public function getPosts(int $moduleId, array $filter, bool $hide = false): array
     {
         if (! empty($filter['tags'])) {

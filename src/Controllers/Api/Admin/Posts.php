@@ -52,8 +52,8 @@ class Posts extends AvegaCmsAdminAPI
     public function new(): ResponseInterface
     {
         return $this->cmsRespond([], [
-            'categories' => $this->BPM->getCategories($this->category_mid),
-            'tags' => $this->TLM->getTags()
+            'categories' => $this->BPM->getCategoriesForDropdown($this->category_mid),
+            'tags' => $this->TM->getTagsForDropdown()
         ]);
     }
 

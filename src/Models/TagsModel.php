@@ -49,6 +49,11 @@ class TagsModel extends AvegaCmsModel
         return $this->select(['id', 'name'])->findAll();
     }
 
+    public function getTagsForDropdown(): array
+    {
+        return $this->select(['id AS value', 'name AS label'])->findAll();
+    }
+
     public function __construct()
     {
         parent::__construct();
