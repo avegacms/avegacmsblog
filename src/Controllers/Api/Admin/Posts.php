@@ -51,14 +51,9 @@ class Posts extends AvegaCmsAdminAPI
 
     public function new(): ResponseInterface
     {
-        return $this->cmsRespond([
-            'title',
-            'anons',
-            'category',
-            'tags',
-            'content',
-            'extra',
-            'preview_id',
+        return $this->cmsRespond([], [
+            'categories' => $this->BPM->getCategories($this->category_mid),
+            'tags' => $this->TLM->getTags()
         ]);
     }
 
