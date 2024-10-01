@@ -87,6 +87,8 @@ class Posts extends AvegaCmsAdminAPI
                 $this->setContent($id, $data);
             }
 
+            $this->setTags($id, $data);
+
             return $this->cmsRespondCreated($id);
         } catch (Exception|ValidationException $e) {
             log_message(
@@ -145,7 +147,12 @@ class Posts extends AvegaCmsAdminAPI
                 return $this->cmsRespondFail($this->BPM->errors());
             }
 
-            $this->setContent($id, $data);
+            if (isset($data['content'], $data['anons']))
+            {
+                $this->setContent($id, $data);
+            }
+
+            $this->setTags($id, $data);
         } catch (Exception|ValidationException $e) {
             log_message(
                 'error',
@@ -276,14 +283,21 @@ class Posts extends AvegaCmsAdminAPI
     protected function setContent(int $id, array $data): void
     {
         if ($this->CM->insert([
-            'id'      => $id,
-            'anons'   => $data['anons'],
-            'content' => $data['content'],
-            'extra'   => $data['extra'] ?? null,
-        ]) === false) {
+                'id' => $id,
+                'anons' => $data['anons'],
+                'content' => $data['content'],
+                'extra' => $data['extra'] ?? null,
+            ]) === false) {
             throw new ValidationException($this->CM->errors());
         }
+    }
 
+    /**
+     * @throws ValidationException
+     * @throws ReflectionException
+     */
+    protected function setTags(int $id, array $data)
+    {
         if (isset($data['tags'])) {
             $data['tags'] = array_unique($data['tags']);
             $tags         = array_column($this->TM->getTags(), 'name', 'id');
