@@ -6,6 +6,7 @@ namespace AvegaCmsBlog\Controllers\Api\Admin;
 
 use AvegaCms\Controllers\Api\Admin\AvegaCmsAdminAPI;
 use AvegaCms\Traits\AvegaCmsApiResponseTrait;
+use AvegaCmsBlog\Exception\ValidationException;
 use AvegaCmsBlog\Models\TagsLinksModel;
 use AvegaCmsBlog\Models\TagsModel;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -74,11 +75,15 @@ class Tags extends AvegaCmsAdminAPI
             }
 
             return $this->cmsRespondCreated($id);
-        } catch (Exception $e) {
+        } catch (Exception|ValidationException $e) {
             log_message(
                 'error',
                 sprintf('[Blog : Tags creating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
             );
+
+            if ($e instanceof ValidationException) {
+                return $this->cmsRespondFail($e->getErrors());
+            }
 
             return $this->cmsRespondFail($e->getMessage());
         }
@@ -104,11 +109,15 @@ class Tags extends AvegaCmsAdminAPI
             }
 
             return $this->respondNoContent();
-        } catch (Exception $e) {
+        } catch (Exception|ValidationException $e) {
             log_message(
                 'error',
                 sprintf('[Blog : Tags updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
             );
+
+            if ($e instanceof ValidationException) {
+                return $this->cmsRespondFail($e->getErrors());
+            }
 
             return $this->cmsRespondFail($e->getMessage());
         }
@@ -139,7 +148,7 @@ class Tags extends AvegaCmsAdminAPI
         ];
 
         if ($this->validateData($data, $rules) === false) {
-            throw new RuntimeException(implode(' и ', $this->validator->getErrors()));
+            throw new ValidationException($this->validator->getErrors());
         }
 
         return $this->validator->getValidated();

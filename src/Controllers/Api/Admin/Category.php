@@ -9,6 +9,7 @@ use AvegaCms\Enums\MetaDataTypes;
 use AvegaCms\Enums\MetaStatuses;
 use AvegaCms\Models\Admin\MetaDataModel;
 use AvegaCms\Utilities\CmsModule;
+use AvegaCmsBlog\Exception\ValidationException;
 use AvegaCmsBlog\Models\BlogPostsModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use Exception;
@@ -62,9 +63,8 @@ class Category extends AvegaCmsAdminAPI
     public function create(): ResponseInterface
     {
         try {
-            $data = $this->getApiData();
+            $data = $this->getValidated($this->getApiData());
 
-            $data = $this->getValidated($data);
             $data = [
                 'parent'          => $this->meta_blog_id,
                 'locale_id'       => 1,
@@ -93,6 +93,10 @@ class Category extends AvegaCmsAdminAPI
                 sprintf('[Blog : Category creating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
             );
 
+            if ($e instanceof ValidationException) {
+                return $this->cmsRespondFail($e->getErrors());
+            }
+
             return $this->cmsRespondFail($e->getMessage());
         }
     }
@@ -104,9 +108,7 @@ class Category extends AvegaCmsAdminAPI
         }
 
         try {
-            $data = $this->getApiData();
-
-            $data = $this->getValidated($data);
+            $data = $this->getValidated($this->getApiData());
 
             $data['id']               = $id;
             $data['slug']             = mb_url_title(mb_strtolower($data['title']));
@@ -126,11 +128,15 @@ class Category extends AvegaCmsAdminAPI
             cache()->delete('blog_categories');
 
             return $this->respondNoContent();
-        } catch (Exception $e) {
+        } catch (Exception|ValidationException $e) {
             log_message(
                 'error',
                 sprintf('[Blog : Category updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
             );
+
+            if ($e instanceof ValidationException) {
+                return $this->cmsRespondFail($e->getErrors());
+            }
 
             return $this->cmsRespondFail($e->getMessage());
         }
@@ -150,6 +156,9 @@ class Category extends AvegaCmsAdminAPI
         return $this->respondNoContent();
     }
 
+    /**
+     * @throws ValidationException
+     */
     protected function getValidated(array $data): array
     {
         $rules = [
@@ -160,7 +169,7 @@ class Category extends AvegaCmsAdminAPI
         ];
 
         if ($this->validateData($data, $rules) === false) {
-            throw new RuntimeException(implode(' и ', $this->validator->getErrors()));
+            throw new ValidationException($this->validator->getErrors());
         }
 
         return $this->validator->getValidated();
