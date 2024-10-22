@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace AvegaCmsBlog\Models\Frontend;
 
-use AvegaCms\Models\Admin\ContentModel;
-use AvegaCms\Models\Admin\MetaDataModel;
+use AvegaCms\Models\Frontend\ContentModel;
+use AvegaCms\Models\Frontend\MetaDataModel;
 use AvegaCms\Utilities\CmsModule;
 use AvegaCmsBlog\Models\TagsLinksModel;
 use AvegaCmsBlog\Models\TagsModel;
-use function AvegaCmsBlog\Models\base_url;
 use function AvegaCmsBlog\Models\request;
 
 class BlogPostsModel extends MetaDataModel
@@ -158,8 +157,6 @@ class BlogPostsModel extends MetaDataModel
                     }
                 }
             }
-
-
         }
 
         return $posts;
