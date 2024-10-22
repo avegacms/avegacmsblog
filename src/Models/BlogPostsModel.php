@@ -97,6 +97,27 @@ class BlogPostsModel extends MetaDataModel
             return [];
         }
 
+        $posts = $this->replaceTags($posts['list']);
+
+        return $posts;
+    }
+
+    public function homePosts(int $moduleId, int $limit): array
+    {
+        $this->hide = true;
+
+        $posts = $this
+            ->getMetadataModule($moduleId)
+            ->where(['parent !=' => 0])
+            ->orderBy('publish_at', 'DESC')
+            ->limit($limit)->findAll();
+
+        if (empty($posts)) {
+            return [];
+        }
+
+        $posts = $this->replaceTags($posts);
+
         return $posts;
     }
 
@@ -107,6 +128,37 @@ class BlogPostsModel extends MetaDataModel
         $post = $this->getMetadata($id, $module);
 
         return $post ?? null;
+    }
+
+    protected function replaceTags(array $posts)
+    {
+        $tags = $this->TLM->getTagsOfPosts($posts, true);
+
+        foreach ($posts as &$post) {
+            if (empty($post->tags))
+            {
+                continue;
+            }
+
+            foreach ($post->tags as &$tag) {
+                foreach ($tags as $other_tag)
+                {
+                    if ((int) $other_tag->value === (int) $tag)
+                    {
+                        $tag = [
+                            'label' => $other_tag->label,
+                            'value' => base_url() . 'blog?tags='. $other_tag->value,
+                        ];
+
+                        continue 2;
+                    }
+                }
+            }
+
+
+        }
+
+        return $posts;
     }
 
     protected function tagsSubstitution(array $data): array
