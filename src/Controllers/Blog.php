@@ -4,7 +4,7 @@ namespace AvegaCmsBlog\Controllers;
 
 use AvegaCms\Controllers\AvegaCmsFrontendController;
 use AvegaCms\Utilities\CmsModule;
-use AvegaCmsBlog\Models\BlogPostsModel;
+use AvegaCmsBlog\Models\Frontend\BlogPostsModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use JetBrains\PhpStorm\NoReturn;
 use ReflectionException;
