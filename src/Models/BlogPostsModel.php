@@ -93,11 +93,26 @@ class BlogPostsModel extends MetaDataModel
             ? $this->getMetadataModule($moduleId)->where(['parent !=' => 0])->filter($filter)->apiPagination()
             : $this->getMetadataModule($moduleId)->filter($filter)->apiPagination();
 
+        if ($hide === false) {
+            $posts['list'] = array_map(function($item) {
+                return [
+                    'publish_at'    => $item->publish_at,
+                    'id'            => $item->id,
+                    'slug'          => $item->slug,
+                    'lang_id'       => $item->locale_id,
+                    'tags'          => $item->tags,
+                    'title'         => $item->title,
+                    'status'        => $item->status,
+                    'url'           => $item->url,
+                ];
+            }, $posts['list']);
+        }
+
         if (empty($posts)) {
             return [];
         }
 
-        $posts = $this->replaceTags($posts['list']);
+        $posts['list'] = $this->replaceTags($posts['list']);
 
         return $posts;
     }
@@ -147,7 +162,7 @@ class BlogPostsModel extends MetaDataModel
                     {
                         $tag = [
                             'label' => $other_tag->label,
-                            'value' => base_url() . 'blog?tags='. $other_tag->value,
+                            'value' => base_url('blog?tags='. $other_tag->value),
                         ];
 
                         continue 2;
@@ -256,13 +271,15 @@ class BlogPostsModel extends MetaDataModel
             return $post;
         }
 
-        $post->url = preg_replace(['/{slug}/', '/{id}/'], [$post->slug, $post->id], $post->url);
+        $url = preg_replace(['/{slug}/', '/{id}/'], [$post->slug, $post->id], $post->url);
+
+        $post->url = base_url($url);
 
         if (isset($post->meta) === false) {
             return $post;
         }
 
-        $post->meta['og:url'] = preg_replace(['/{slug}/', '/{id}/'], [$post->slug, $post->id], $post->url);
+        $post->meta['og:url'] = base_url($url);
 
         return $post;
     }

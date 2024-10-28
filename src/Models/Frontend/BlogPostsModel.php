@@ -150,7 +150,7 @@ class BlogPostsModel extends MetaDataModel
                     {
                         $tag = [
                             'label' => $other_tag->label,
-                            'value' => base_url() . 'blog?tags='. $other_tag->value,
+                            'value' => base_url('blog?tags='. $other_tag->value),
                         ];
 
                         continue 2;
