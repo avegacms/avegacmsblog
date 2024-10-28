@@ -170,7 +170,16 @@ class BlogPostsModel extends MetaDataModel
                 }
             }
 
-            $post['tags'] = $temp['tags'];
+            if (is_array($post))
+            {
+                $post['tags'] = $temp['tags'];
+            }
+
+            if (is_object($post))
+            {
+                $post->tags = $temp['tags'];
+            }
+
         }
 
         return $posts;
