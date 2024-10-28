@@ -142,6 +142,8 @@ class BlogPostsModel extends MetaDataModel
 
         $post = $this->getMetadata($id, $module);
 
+        $post = $this->replaceTags([$post])[0];
+
         return $post ?? null;
     }
 
