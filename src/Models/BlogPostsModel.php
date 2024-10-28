@@ -112,7 +112,7 @@ class BlogPostsModel extends MetaDataModel
             return [];
         }
 
-        $posts['list'] = $this->replaceTags($posts['list']);
+        $posts['list'] = $this->replaceTags($posts['list'], $hide);
 
         return $posts;
     }
@@ -145,17 +145,17 @@ class BlogPostsModel extends MetaDataModel
         return $post ?? null;
     }
 
-    protected function replaceTags(array $posts)
+    protected function replaceTags(array $posts, bool $hide = true)
     {
-        $tags = $this->TLM->getTagsOfPosts($posts, true);
-
+        $tags = $this->TLM->getTagsOfPosts($posts, $hide);
         foreach ($posts as &$post) {
-            if (empty($post->tags))
+            $temp = (array) $post;
+            if (empty($temp['tags']))
             {
                 continue;
             }
 
-            foreach ($post->tags as &$tag) {
+            foreach ($temp['tags'] as &$tag) {
                 foreach ($tags as $other_tag)
                 {
                     if ((int) $other_tag->value === (int) $tag)
@@ -170,7 +170,7 @@ class BlogPostsModel extends MetaDataModel
                 }
             }
 
-
+            $post['tags'] = $temp['tags'];
         }
 
         return $posts;
