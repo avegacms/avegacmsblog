@@ -100,7 +100,7 @@ class BlogPostsModel extends MetaDataModel
             return [];
         }
 
-        $posts = $this->replaceTags($posts['list']);
+        $posts['list'] = $this->replaceTags($posts['list']);
 
         return $posts;
     }
