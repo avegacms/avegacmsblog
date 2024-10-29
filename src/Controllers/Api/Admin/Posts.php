@@ -14,6 +14,7 @@ use AvegaCms\Utilities\CmsModule;
 use AvegaCms\Utilities\Exceptions\UploaderException;
 use AvegaCmsBlog\Exception\ValidationException;
 use AvegaCmsBlog\Models\BlogPostsModel;
+use AvegaCmsBlog\Models\Frontend\BlogPostsModel as FrontBlogPostsModel;
 use AvegaCmsBlog\Models\TagsLinksModel;
 use AvegaCmsBlog\Models\TagsModel;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -40,6 +41,12 @@ class Posts extends AvegaCmsAdminAPI
         $this->TLM          = new TagsLinksModel();
         $this->category_mid = (int) CmsModule::meta('blog.category')['id'];
         $this->post_mid     = (int) CmsModule::meta('blog.post')['id'];
+    }
+
+    public function getPosts()
+    {
+        return $this->cmsRespond(model(FrontBlogPostsModel::class)
+            ->getPosts($this->post_mid, $this->request->getGet() ?? [], true));
     }
 
     public function index(): ResponseInterface
