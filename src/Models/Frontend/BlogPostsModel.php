@@ -133,6 +133,20 @@ class BlogPostsModel extends MetaDataModel
         return $post ?? null;
     }
 
+    public function getSearchInfo(array $filter): ?array
+    {
+        if (empty($filter['tags']))
+        {
+            return null;
+        }
+        $tags = $this->TLM->select(['tags.name as label', 'tags.id as value', 'tags_links.meta_id'])
+            ->join('tags', 'tags_links.tag_id = tags.id AND tags.active = 1')->findAll();
+
+        $filter = array_unique(explode(',', (string) $filter['tags']));
+
+        return $this->tagSubstitute($filter, $tags);
+    }
+
     protected function replaceTags(array $posts)
     {
         $tags = $this->TLM->getTagsOfPosts($posts, true);
@@ -143,23 +157,30 @@ class BlogPostsModel extends MetaDataModel
                 continue;
             }
 
-            foreach ($post->tags as &$tag) {
-                foreach ($tags as $other_tag)
-                {
-                    if ((int) $other_tag->value === (int) $tag)
-                    {
-                        $tag = [
-                            'label' => $other_tag->label,
-                            'value' => base_url('blog?tags='. $other_tag->value),
-                        ];
+            $posts = $this->tagSubstitute($posts->tags, $tags);
+        }
 
-                        continue 2;
-                    }
+        return $posts;
+    }
+
+    protected function tagSubstitute(array $tagsLocation, array $tags): array
+    {
+        foreach ($tagsLocation as &$tag) {
+            foreach ($tags as $other_tag)
+            {
+                if ((int) $other_tag->value === (int) $tag)
+                {
+                    $tag = [
+                        'label' => $other_tag->label,
+                        'value' => base_url('blog?tags='. $other_tag->value),
+                    ];
+
+                    continue 2;
                 }
             }
         }
 
-        return $posts;
+        return $tagsLocation;
     }
 
     protected function tagsSubstitution(array $data): array
