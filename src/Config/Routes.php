@@ -49,6 +49,13 @@
 //            });
 //        });
 //    });
+//    $routes->group('public', static function (RouteCollection $routes) {
+//        $routes->group('blog', static function (RouteCollection $routes) {
+//            $routes->group('post', static function (RouteCollection $routes) {
+//                $routes->get('/', [Posts::class, 'getPosts']);
+//            });
+//        });
+//    });
 //});
 //
 //$routes->group('blog', static function (RouteCollection $routes) {
