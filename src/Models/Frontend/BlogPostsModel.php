@@ -157,7 +157,7 @@ class BlogPostsModel extends MetaDataModel
                 continue;
             }
 
-            $posts = $this->tagSubstitute($posts->tags, $tags);
+            $post->tags = $this->tagSubstitute($post->tags, $tags);
         }
 
         return $posts;
