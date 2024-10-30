@@ -7,6 +7,7 @@ namespace AvegaCmsBlog\Controllers\Api\Admin;
 use AvegaCms\Controllers\Api\Admin\AvegaCmsAdminAPI;
 use AvegaCms\Enums\MetaDataTypes;
 use AvegaCms\Enums\MetaStatuses;
+use AvegaCms\Exceptions\AvegaCmsException;
 use AvegaCms\Models\Admin\ContentModel;
 use AvegaCms\Utilities\Cms;
 use AvegaCms\Utilities\CmsFileManager;
@@ -43,12 +44,6 @@ class Posts extends AvegaCmsAdminAPI
         $this->post_mid     = (int) CmsModule::meta('blog.post')['id'];
     }
 
-    public function getPosts()
-    {
-        return $this->cmsRespond(model(FrontBlogPostsModel::class)
-            ->getPosts($this->post_mid, $this->request->getGet() ?? [], true));
-    }
-
     public function index(): ResponseInterface
     {
         $posts = $this->BPM->getPosts($this->post_mid, $this->request->getGet() ?? []);
@@ -61,6 +56,12 @@ class Posts extends AvegaCmsAdminAPI
         return $this->cmsRespond([], [
             'categories' => $this->BPM->getCategoriesForDropdown($this->category_mid),
         ]);
+    }
+
+    public function getPosts()
+    {
+        return $this->cmsRespond(model(FrontBlogPostsModel::class)
+            ->getPosts($this->post_mid, $this->request->getGet() ?? [], true));
     }
 
     public function create(): ResponseInterface
@@ -100,11 +101,7 @@ class Posts extends AvegaCmsAdminAPI
                 sprintf('[Blog : Post updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
             );
 
-            if ($e instanceof ValidationException) {
-                return $this->cmsRespondFail($e->getErrors());
-            }
-
-            return $this->cmsRespondFail($e->getMessage());
+            return $this->cmsException($e);
         }
     }
 
@@ -184,11 +181,7 @@ class Posts extends AvegaCmsAdminAPI
                 sprintf('[Blog : Post updating] : %s & %s', $e->getMessage(), $e->getTraceAsString())
             );
 
-            if ($e instanceof ValidationException) {
-                return $this->cmsRespondFail($e->getErrors());
-            }
-
-            return $this->cmsRespondFail($e->getMessage());
+            return $this->cmsException($e);
         }
 
         return $this->respondNoContent();
@@ -246,7 +239,7 @@ class Posts extends AvegaCmsAdminAPI
 
             return $this->respondNoContent();
         } catch (JsonException|ReflectionException|UploaderException $e) {
-            return $this->failValidationErrors(empty($e->getMessages()) ? $e->getMessage() : $e->getMessages());
+            return $this->cmsException($e);
         }
     }
 
@@ -258,7 +251,7 @@ class Posts extends AvegaCmsAdminAPI
         $rules = $this->rules();
 
         if ($this->validateData($data, $rules) === false) {
-            throw new ValidationException($this->validator->getErrors());
+            throw new AvegaCmsException($this->validator->getErrors());
         }
 
         if ($this->BPM->where(['id' => $data['category'], 'module_id' => $this->category_mid])->first() === null) {
@@ -313,7 +306,7 @@ class Posts extends AvegaCmsAdminAPI
                 'content' => $data['content'] ?? null,
                 'extra' => $data['extra'] ?? null,
             ]) === false) {
-            throw new ValidationException($this->CM->errors());
+            throw new AvegaCmsException($this->CM->errors());
         }
     }
 
@@ -347,7 +340,7 @@ class Posts extends AvegaCmsAdminAPI
             }
 
             if ($this->TLM->insertbatch($batch) !== count($batch)) {
-                throw new ValidationException($this->TLM->errors());
+                throw new AvegaCmsException($this->TLM->errors());
             }
         }
     }

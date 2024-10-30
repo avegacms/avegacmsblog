@@ -150,38 +150,42 @@ class BlogPostsModel extends MetaDataModel
     protected function replaceTags(array $posts, bool $hide = true)
     {
         $tags = $this->TLM->getTagsOfPosts($posts, $hide);
-        foreach ($posts as &$post) {
-            $temp = (array) $post;
-            if (empty($temp['tags']))
-            {
-                continue;
-            }
 
-            foreach ($temp['tags'] as &$tag) {
-                foreach ($tags as $other_tag)
+        if (!$hide)
+        {
+            foreach ($posts as &$post) {
+                $temp = (array) $post;
+                if (empty($temp['tags']))
                 {
-                    if ((int) $other_tag->value === (int) $tag)
-                    {
-                        $tag = [
-                            'label' => $other_tag->label,
-                            'value' => base_url('blog?tags='. $other_tag->value),
-                        ];
+                    continue;
+                }
 
-                        continue 2;
+                foreach ($temp['tags'] as &$tag) {
+                    foreach ($tags as $other_tag)
+                    {
+                        if ((int) $other_tag->value === (int) $tag)
+                        {
+                            $tag = [
+                                'label' => $other_tag->label,
+                                'value' => base_url('blog?tags='. $other_tag->value),
+                            ];
+
+                            continue 2;
+                        }
                     }
                 }
-            }
 
-            if (is_array($post))
-            {
-                $post['tags'] = $temp['tags'];
-            }
+                if (is_array($post))
+                {
+                    $post['tags'] = $temp['tags'];
+                }
 
-            if (is_object($post))
-            {
-                $post->tags = $temp['tags'];
-            }
+                if (is_object($post))
+                {
+                    $post->tags = $temp['tags'];
+                }
 
+            }
         }
 
         return $posts;
