@@ -24,6 +24,13 @@ class Post extends AvegaCmsFrontendController
         $this->post_mid     = (int) CmsModule::meta('blog.post')['id'];
         $this->BPM          = new BlogPostsModel();
 
+        [$slug, $id] = explode('_', request()->getUri()->getSegments()[request()->getUri()->getTotalSegments() - 1]);
+
+        $this->metaParams = [
+            'slug' => $slug,
+            'id'   => $id
+        ];
+
         parent::__construct();
     }
 
@@ -46,8 +53,6 @@ class Post extends AvegaCmsFrontendController
             return redirect()->to('/blog/post/' . $post->slug . '_' . $post->id, 301);
         }
 
-        $post = $this->BPM->getPost($post->id, $this->post_mid, true);
-
-        return $this->render(['post' => $post], 'post');
+        return $this->render([]);
     }
 }
