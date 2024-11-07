@@ -7,6 +7,7 @@ namespace AvegaCmsBlog\Controllers\Api\Admin;
 use AvegaCms\Controllers\Api\Admin\AvegaCmsAdminAPI;
 use AvegaCms\Enums\MetaDataTypes;
 use AvegaCms\Enums\MetaStatuses;
+use AvegaCms\Exceptions\AvegaCmsException;
 use AvegaCms\Models\Admin\MetaDataModel;
 use AvegaCms\Utilities\CmsModule;
 use AvegaCmsBlog\Exception\ValidationException;
@@ -82,6 +83,15 @@ class Category extends AvegaCmsAdminAPI
             ];
             if (($id = $this->MDM->insert($data)) === false) {
                 return $this->cmsRespondFail($this->MDM->errors());
+            }
+
+            if ($this->CM->insert([
+                    'id' => $id,
+                    'anons' => null,
+                    'content' => null,
+                    'extra' => null,
+                ]) === false) {
+                throw new AvegaCmsException($this->CM->errors());
             }
 
             cache()->delete('blog_categories');
