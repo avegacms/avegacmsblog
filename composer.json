@@ -11,7 +11,7 @@
   ],
   "require": {
     "php": "^8.2",
-    "avegacms/avegacms": "dev-master",
+    "avegacms/avegacms": "1.0.0",
     "codeigniter4/framework": "^4.0",
     "codeigniter4/translations": "^4.5"
   },
