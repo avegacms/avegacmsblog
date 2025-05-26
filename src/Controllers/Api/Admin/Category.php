@@ -6,6 +6,7 @@ namespace AvegaCmsBlog\Controllers\Api\Admin;
 
 use AvegaCms\Controllers\Api\Admin\AvegaCmsAdminAPI;
 use AvegaCms\Enums\MetaDataTypes;
+use AvegaCms\Models\Admin\ContentModel;
 use AvegaCms\Enums\MetaStatuses;
 use AvegaCms\Exceptions\AvegaCmsException;
 use AvegaCms\Models\Admin\MetaDataModel;
@@ -28,7 +29,7 @@ class Category extends AvegaCmsAdminAPI
         parent::__construct();
 
         $this->MDM = new MetaDataModel();
-
+        $this->CM  = new ContentModel();
         $this->BPM          = new BlogPostsModel();
         $this->meta_blog_id = (int) $this->MDM->getMetadataModule((int) CmsModule::meta('blog')['id'])->first()->id;
         $this->category_mid = (int) CmsModule::meta('blog.category')['id'];
