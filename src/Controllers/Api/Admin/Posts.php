@@ -187,6 +187,27 @@ class Posts extends AvegaCmsAdminAPI
         return $this->respondNoContent();
     }
 
+    public function deleteImage(int $id): ResponseInterface
+    {
+        try {
+            if ($this->BPM->where([
+                    'module_id' => $this->post_mid,
+                ])->find($id) === null) {
+                return $this->failNotFound();
+            }
+
+            $this->BPM->builder()?->resetQuery();
+
+            if ($this->BPM->update($id, ['preview_id' => null]) === false) {
+                throw new AvegaCmsException($this->BPM->errors());
+            }
+
+            return $this->respondNoContent();
+        } catch (Exception $e) {
+            return $this->cmsException($e);
+        }
+    }
+
     public function delete(int $id): ResponseInterface
     {
         if ($this->BPM->where([
