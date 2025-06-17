@@ -93,8 +93,8 @@ class BlogPostsModel extends MetaDataModel
         $this->hide = $hide;
 
         $posts = ($hide)
-            ? $this->getMetadataModule($moduleId)->where(['parent !=' => 0])->filter($filter)->apiPagination()
-            : $this->getMetadataModule($moduleId)->filter($filter)->apiPagination();
+            ? $this->getMetadataModule($moduleId)->orderBy('publish_at', 'DESC')->where(['parent !=' => 0])->filter($filter)->apiPagination()
+            : $this->getMetadataModule($moduleId)->orderBy('publish_at', 'DESC')->filter($filter)->apiPagination();
 
         if (empty($posts)) {
             return [];
